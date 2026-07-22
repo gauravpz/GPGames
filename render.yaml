@@ -1,6 +1,5 @@
 services:
-  - type: web
+  - type: static
     name: gpgames-spinverse
-    env: static
     buildCommand: npm run build
     staticPublishPath: ./dist
