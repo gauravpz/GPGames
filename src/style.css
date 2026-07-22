@@ -341,8 +341,9 @@ input[type="range"] {
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 520px;
-  aspect-ratio: 1;
+  height: calc(100vh - 260px);
+  min-height: 320px;
+  max-height: 800px;
   margin: 0.5rem 0;
 }
 
@@ -804,7 +805,9 @@ input[type="text"]:focus, textarea:focus, select:focus {
     grid-template-columns: 1fr;
   }
   .wheel-canvas-wrapper {
-    min-height: 75vw;
+    height: calc(100vh - 200px);
+    min-height: 280px;
+    max-height: 85vw;
   }
   .config-header {
     flex-direction: column;
