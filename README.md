@@ -74,3 +74,17 @@ npm run build
 - **Wheel Card Hover Effect**: Cards lift and glow on hover.
 - **Improved Mobile Responsive**: Better wrapping, icon-only buttons on small screens, stacked grid layouts on mobile, and 480px breakpoint for tiny screens.
 - **Toast Duration Increase**: Result toast auto-close increased from 3s to 5s for better readability.
+- **Render Deployment Blueprint**: Added `render.yaml` for instant free static site hosting on Render.
+
+---
+
+## 🌐 Deploying to Render.com
+
+1. Sign in to [Render.com](https://dashboard.render.com/).
+2. Click **New +** -> **Static Site**.
+3. Connect your GitHub repository `gauravpz/GPGames`.
+4. Render will auto-detect settings from `render.yaml` or set manually:
+   - **Build Command**: `npm run build`
+   - **Publish Directory**: `dist`
+5. Click **Create Static Site** — your live URL will be ready in seconds!
+
