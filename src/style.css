@@ -134,7 +134,7 @@ body {
 
 /* Main Layout */
 .main-container {
-  max-width: 1280px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 1.5rem;
   display: flex;
@@ -294,22 +294,22 @@ input[type="range"] {
 /* Wheels Grid Layouts */
 .wheels-grid {
   display: grid;
-  gap: 2rem;
+  gap: 1.5rem;
   justify-content: center;
-  align-items: center;
-  min-height: 520px;
+  align-items: start;
+  min-height: 60vh;
 }
 
 .wheels-grid.layout-1 {
-  grid-template-columns: minmax(360px, 720px);
+  grid-template-columns: minmax(400px, 900px);
 }
 
 .wheels-grid.layout-2 {
-  grid-template-columns: repeat(auto-fit, minmax(340px, 580px));
+  grid-template-columns: repeat(2, minmax(380px, 1fr));
 }
 
 .wheels-grid.layout-3 {
-  grid-template-columns: repeat(3, minmax(260px, 420px));
+  grid-template-columns: repeat(3, minmax(280px, 1fr));
 }
 
 .wheel-card {
@@ -341,7 +341,8 @@ input[type="range"] {
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: 440px;
+  min-height: 520px;
+  aspect-ratio: 1;
   margin: 0.5rem 0;
 }
 
@@ -803,7 +804,7 @@ input[type="text"]:focus, textarea:focus, select:focus {
     grid-template-columns: 1fr;
   }
   .wheel-canvas-wrapper {
-    min-height: 320px;
+    min-height: 75vw;
   }
   .config-header {
     flex-direction: column;

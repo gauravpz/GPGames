@@ -74,7 +74,7 @@ export class Wheel {
     const rect = this.container.getBoundingClientRect();
     const w = rect.width > 100 ? rect.width : 450;
     const h = rect.height > 100 ? rect.height : w;
-    const size = Math.min(w, h, 650);
+    const size = Math.min(w, h);
     const dpr = window.devicePixelRatio || 1;
 
     this.size = size;
