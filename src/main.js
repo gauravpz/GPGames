@@ -120,6 +120,11 @@ class App {
     this.mainRemoveBtn = document.getElementById('main-remove-landed-btn');
     this.autoRemoveEnabled = false;
 
+    this.reverseSpinBtn = document.getElementById('reverse-spin-toggle-btn');
+    this.multiThrustBtn = document.getElementById('multi-thrust-toggle-btn');
+    this.reverseSpinEnabled = false;
+    this.multiThrustEnabled = true;
+
     this.bgmToggleBtn = document.getElementById('bgm-toggle-btn');
     this.sfxToggleBtn = document.getElementById('sfx-toggle-btn');
     this.funnyToggleBtn = document.getElementById('funny-toggle-btn');
@@ -201,6 +206,26 @@ class App {
     if (this.mainRemoveBtn) {
       this.mainRemoveBtn.addEventListener('click', () => {
         this.removeLandedOptions();
+      });
+    }
+
+    if (this.reverseSpinBtn) {
+      this.reverseSpinBtn.addEventListener('click', () => {
+        this.reverseSpinEnabled = !this.reverseSpinEnabled;
+        this.reverseSpinBtn.classList.toggle('active', this.reverseSpinEnabled);
+        const textSpan = this.reverseSpinBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = `Reverse: ${this.reverseSpinEnabled ? 'ON' : 'OFF'}`;
+        if (soundEngine.funnyMode) soundEngine.playQuack();
+      });
+    }
+
+    if (this.multiThrustBtn) {
+      this.multiThrustBtn.addEventListener('click', () => {
+        this.multiThrustEnabled = !this.multiThrustEnabled;
+        this.multiThrustBtn.classList.toggle('active', this.multiThrustEnabled);
+        const textSpan = this.multiThrustBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = `Thrust Kicks: ${this.multiThrustEnabled ? 'ON' : 'OFF'}`;
+        if (soundEngine.funnyMode) soundEngine.playQuack();
       });
     }
 
@@ -431,6 +456,13 @@ class App {
       wheelInstance.onTickCallback = (speedRatio) => {
         soundEngine.playTick(0.8 + speedRatio * 0.5);
       };
+      wheelInstance.onThrustCallback = () => {
+        if (soundEngine.funnyMode) {
+          soundEngine.playBoing();
+        } else {
+          soundEngine.playTick(1.5);
+        }
+      };
       wheelInstance.onClickCallback = () => {
         this.spinAll();
       };
@@ -504,7 +536,7 @@ class App {
         }
       }
 
-      // Launch all wheel spins simultaneously with different speeds & physics curves
+      // Launch all wheel spins simultaneously with different speeds, thrusts & direction physics
       const speedProfiles = [
         { speedMultiplier: 0.82, easePower: 2.8 },
         { speedMultiplier: 1.35, easePower: 4.2 },
@@ -513,7 +545,7 @@ class App {
 
       const spinPromises = this.wheels.map((wheel, idx) => {
         const profile = speedProfiles[idx] || speedProfiles[0];
-        return wheel.spin(this.spinDuration, null, profile.speedMultiplier, profile.easePower).then(result => {
+        return wheel.spin(this.spinDuration, null, profile.speedMultiplier, profile.easePower, this.reverseSpinEnabled, this.multiThrustEnabled).then(result => {
           const badge = document.getElementById(`winner-badge-${idx}`);
           if (badge && result && result.winningSlice) {
             badge.textContent = `🎉 ${result.winningSlice.text}`;

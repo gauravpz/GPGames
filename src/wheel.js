@@ -17,6 +17,7 @@ export class Wheel {
     this.onTickCallback = null;
     this.onCompleteCallback = null;
     this.onClickCallback = null;
+    this.onThrustCallback = null;
 
     this.ledPhase = 0;
     this.winHighlightIndex = -1;
@@ -284,12 +285,13 @@ export class Wheel {
   }
 
   // Spin wheel to random target over specified duration (in seconds)
-  spin(durationSeconds = 5, targetIndex = null, speedMultiplier = 1.0, easePower = 3.5) {
+  spin(durationSeconds = 5, targetIndex = null, speedMultiplier = 1.0, easePower = 3.5, reverseDirection = false, enableThrusts = true) {
     if (this.isSpinning || this.options.length === 0) return Promise.reject();
 
     this.isSpinning = true;
     const numSlices = this.options.length;
     const sliceAngle = (Math.PI * 2) / numSlices;
+    const direction = reverseDirection ? -1 : 1;
 
     // Pick random target slice if not explicitly provided
     if (targetIndex === null || targetIndex < 0 || targetIndex >= numSlices) {
@@ -305,22 +307,54 @@ export class Wheel {
     // Minimum full spins vary per wheel speed multiplier
     const extraRotations = (Math.floor(Math.random() * 3) + Math.round(5 * speedMultiplier)) * Math.PI * 2;
     
-    // Calculate final target angle
-    const currentMod = this.rotationAngle % (Math.PI * 2);
+    // Calculate final target angle with direction support
+    const currentMod = (this.rotationAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
     const startAngle = this.rotationAngle;
-    const finalAngle = startAngle + extraRotations + ((targetSliceAngle - currentMod + Math.PI * 2) % (Math.PI * 2));
+
+    let targetModAngle = (targetSliceAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    let delta = 0;
+    if (direction === 1) {
+      delta = extraRotations + ((targetModAngle - currentMod + Math.PI * 2) % (Math.PI * 2));
+    } else {
+      delta = -(extraRotations + ((currentMod - targetModAngle + Math.PI * 2) % (Math.PI * 2)));
+    }
+    const finalAngle = startAngle + delta;
 
     const startTime = performance.now();
     const durationMs = (durationSeconds * speedMultiplier) * 1000;
     let lastSliceCalculated = this.getWinningIndexAtAngle(this.rotationAngle);
 
+    // 3 to 4 mid-spin thrust timestamps (surges when speed drops)
+    const thrustTimes = enableThrusts ? [0.38, 0.58, 0.74, 0.86] : [];
+    const thrustBoosts = [0.065, 0.048, 0.035, 0.022];
+    const thrustTriggered = [false, false, false, false];
+
     return new Promise((resolve) => {
       const animate = (now) => {
         const elapsed = now - startTime;
-        const progress = Math.min(1, elapsed / durationMs);
+        const rawProgress = Math.min(1, elapsed / durationMs);
+
+        // Apply 3-4 mid-spin speed thrust surges as speed drops
+        let effectiveProgress = rawProgress;
+        if (enableThrusts) {
+          for (let tIdx = 0; tIdx < thrustTimes.length; tIdx++) {
+            if (rawProgress >= thrustTimes[tIdx]) {
+              const dt = rawProgress - thrustTimes[tIdx];
+              const surge = Math.sin(Math.min(Math.PI, dt * 7.5)) * thrustBoosts[tIdx];
+              effectiveProgress += surge;
+
+              if (!thrustTriggered[tIdx]) {
+                thrustTriggered[tIdx] = true;
+                if (this.onThrustCallback) {
+                  this.onThrustCallback(tIdx);
+                }
+              }
+            }
+          }
+        }
 
         // Custom ease-out deceleration curve per wheel
-        const easeOut = 1 - Math.pow(1 - progress, easePower);
+        const easeOut = 1 - Math.pow(1 - Math.min(1, effectiveProgress), easePower);
         this.rotationAngle = startAngle + (finalAngle - startAngle) * easeOut;
 
         // Check for slice boundary cross to trigger tick sound
@@ -328,14 +362,14 @@ export class Wheel {
         if (currentSlice !== lastSliceCalculated) {
           lastSliceCalculated = currentSlice;
           if (this.onTickCallback) {
-            const speedRatio = 1 - progress;
+            const speedRatio = 1 - rawProgress;
             this.onTickCallback(speedRatio);
           }
         }
 
         this.draw();
 
-        if (progress < 1) {
+        if (rawProgress < 1) {
           requestAnimationFrame(animate);
         } else {
           this.isSpinning = false;

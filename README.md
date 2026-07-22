@@ -74,6 +74,8 @@ npm run build
 - **Wheel Card Hover Effect**: Cards lift and glow on hover.
 - **Improved Mobile Responsive**: Better wrapping, icon-only buttons on small screens, stacked grid layouts on mobile, and 480px breakpoint for tiny screens.
 - **Toast Duration Increase**: Result toast auto-close increased from 3s to 5s for better readability.
+- **3-4 Mid-Spin Speed Thrusts / Boosts**: As each wheel decelerates, 3 to 4 mid-spin thrust surges kick in to dynamically boost rotation velocity with audio thrust feedback!
+- **Reverse Spin Option**: Toggle switch (`↺ Reverse: ON/OFF`) allows wheels to spin counter-clockwise with exact needle landing calculation.
 - **Render Deployment Blueprint**: Added `render.yaml` for instant free static site hosting on Render.
 
 ---
