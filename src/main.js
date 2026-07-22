@@ -129,6 +129,7 @@ class App {
     this.sfxToggleBtn = document.getElementById('sfx-toggle-btn');
     this.funnyToggleBtn = document.getElementById('funny-toggle-btn');
 
+    this.tvModeBtn = document.getElementById('tv-mode-btn');
     this.fullscreenBtn = document.getElementById('fullscreen-btn');
     this.resetAllBtn = document.getElementById('reset-all-btn');
 
@@ -257,6 +258,25 @@ class App {
         this.sfxToggleBtn.classList.toggle('active', !isMuted);
         const textSpan = this.sfxToggleBtn.querySelector('.btn-text');
         if (textSpan) textSpan.textContent = `SFX: ${!isMuted ? 'ON' : 'OFF'}`;
+      });
+    }
+
+    // TV Mode toggle
+    if (this.tvModeBtn) {
+      this.tvModeBtn.addEventListener('click', () => {
+        const isTV = document.body.classList.toggle('tv-mode');
+        this.tvModeBtn.classList.toggle('active', isTV);
+        const textSpan = this.tvModeBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = isTV ? 'Exit TV' : 'TV Mode';
+        
+        // Trigger canvas resize so wheels auto-expand to giant TV sizes!
+        setTimeout(() => {
+          this.wheels.forEach(w => w.resize());
+        }, 100);
+
+        if (isTV && !document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
       });
     }
 

@@ -821,3 +821,82 @@ input[type="text"]:focus, textarea:focus, select:focus {
     width: calc(100% - 1.5rem);
   }
 }
+
+/* 📺 TV Projection Mode Styling (Big Screen / Casting Optimized) */
+body.tv-mode {
+  padding: 0;
+  overflow-x: hidden;
+}
+
+body.tv-mode .config-panel,
+body.tv-mode .history-panel {
+  display: none !important;
+}
+
+body.tv-mode .main-container {
+  max-width: 100vw;
+  padding: 1rem 2rem;
+  gap: 1.5rem;
+}
+
+body.tv-mode .navbar {
+  padding: 1rem 2.5rem;
+}
+
+body.tv-mode .brand h1 {
+  font-size: 2.2rem;
+}
+
+body.tv-mode .control-bar {
+  padding: 1rem 2rem;
+  background: rgba(15, 23, 42, 0.85);
+}
+
+body.tv-mode .btn-primary-large {
+  font-size: 1.4rem;
+  padding: 1rem 2.5rem;
+}
+
+body.tv-mode .wheel-card {
+  padding: 2rem;
+  border-width: 2px;
+  border-color: rgba(0, 240, 255, 0.3);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 240, 255, 0.2);
+}
+
+body.tv-mode .wheel-title {
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+body.tv-mode .wheel-canvas-wrapper {
+  min-height: 520px;
+}
+
+body.tv-mode .wheel-winner-badge {
+  font-size: 1.6rem;
+  padding: 0.8rem 1.8rem;
+}
+
+body.tv-mode .wheel-winner-badge.revealed {
+  font-size: 1.8rem;
+  border-width: 2px;
+  box-shadow: 0 0 30px rgba(255, 46, 147, 0.6), 0 0 50px rgba(255, 230, 0, 0.4);
+}
+
+body.tv-mode .result-toast {
+  top: 1.5rem;
+  right: 2rem;
+  width: 480px;
+  padding: 1.5rem 1.75rem;
+  border-width: 2px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 240, 255, 0.4);
+}
+
+body.tv-mode .toast-title {
+  font-size: 1.4rem;
+}
+
+body.tv-mode .result-item-value {
+  font-size: 1.5rem;
+}

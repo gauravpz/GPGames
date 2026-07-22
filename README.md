@@ -76,6 +76,7 @@ npm run build
 - **Toast Duration Increase**: Result toast auto-close increased from 3s to 5s for better readability.
 - **3-4 Mid-Spin Speed Thrusts / Boosts**: As each wheel decelerates, 3 to 4 mid-spin thrust surges kick in to dynamically boost rotation velocity with audio thrust feedback!
 - **Reverse Spin Option**: Toggle switch (`↺ Reverse: ON/OFF`) allows wheels to spin counter-clockwise with exact needle landing calculation.
+- **📺 TV Projection Mode**: One-click **`📺 TV Mode`** button in header optimizes layout, hides configuration inputs, scales wheels up to giant high-definition TV sizes (520px+ canvas height), increases typography for 15ft living room viewing, and triggers fullscreen automatically for Chromecast/TV casting!
 - **Render Deployment Blueprint**: Added `render.yaml` for instant free static site hosting on Render.
 
 ---
