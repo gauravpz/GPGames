@@ -181,6 +181,7 @@ export class FreezeDanceGame {
 
     this.isPlaying = true;
     this.isPaused = false;
+    this.freezeCount = 0;
     this.overlay.style.display = 'none';
 
     this.actionBtn.className = 'freeze-main-btn active';
@@ -204,8 +205,8 @@ export class FreezeDanceGame {
     if (!this.isPlaying) return;
 
     if (!this.isPaused) {
-      // Dance phase: play for random 4s to 9s
-      const playDuration = Math.floor(Math.random() * 5000 + 4000);
+      // Dance phase: play for random 8s to 16s (lots of fun dancing time!)
+      const playDuration = Math.floor(Math.random() * 8000 + 8000);
       this.freezeTimer = setTimeout(() => {
         if (!this.isPlaying) return;
         this.triggerFreeze();
@@ -215,25 +216,30 @@ export class FreezeDanceGame {
 
   triggerFreeze() {
     this.isPaused = true;
+    this.freezeCount++;
 
     // Pause video (frozen frame stays 100% visible on screen so kids can check pose!)
     if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
       this.ytPlayer.pauseVideo();
     }
 
-    // Audio SFX & Voice
+    // Audio SFX & Voice (Only speak long prompt on first 2 freezes!)
     if (this.soundEngine) {
       this.soundEngine.playWhistle();
-      this.soundEngine.speak("Freeze! Match the screen!");
+      if (this.freezeCount <= 2) {
+        this.soundEngine.speak("Freeze! Are you in the same pose as on the screen?");
+      } else {
+        this.soundEngine.speak("Freeze!");
+      }
     }
 
     // Keep video 100% unobstructed (no text card blocking video frame)
     if (this.overlay) this.overlay.style.display = 'none';
-    this.statusBadge.textContent = `🧊 FREEZE! (5s-7s) Match your pose with the frozen screen! 🛑`;
+    this.statusBadge.textContent = `🧊 FREEZE! (3s-5s) Are you in the same pose as on the screen? 🛑`;
     this.statusBadge.classList.add('frozen');
 
-    // Freeze phase: stay paused for random 5s to 7s
-    const freezeDuration = Math.floor(Math.random() * 2000 + 5000);
+    // Freeze phase: stay paused for random 3s to 5s
+    const freezeDuration = Math.floor(Math.random() * 2000 + 3000);
     this.freezeTimer = setTimeout(() => {
       if (!this.isPlaying) return;
       this.resumeDance();
