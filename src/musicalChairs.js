@@ -274,7 +274,18 @@ export class MusicalChairsGame {
       clearTimeout(this.musicTimer);
       this.musicTimer = null;
     }
+    if (this.autoTimer) {
+      clearInterval(this.autoTimer);
+      this.autoTimer = null;
+    }
     this.stopMusic();
+
+    if (this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
+      try {
+        this.ytPlayer.seekTo(0);
+        this.ytPlayer.pauseVideo();
+      } catch(e){}
+    }
 
     if (this.animFrameId) {
       cancelAnimationFrame(this.animFrameId);
@@ -293,7 +304,7 @@ export class MusicalChairsGame {
     this.actionBtn.className = 'chairs-main-btn';
     this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC</span>`;
     this.actionBtn.disabled = false;
-    this.statusBadge.textContent = `Round 1: ${this.activePlayers.length} Players, ${this.chairsCount} Chairs 🪑`;
+    this.statusBadge.textContent = `Round 1 Ready: ${this.activePlayers.length} Players, ${this.chairsCount} Chairs 🪑`;
     this.statusBadge.classList.remove('frozen', 'winner');
 
     this.renderChips();
@@ -325,12 +336,11 @@ export class MusicalChairsGame {
       return;
     }
 
-    if (this.isFrozen) {
-      this.nextRound();
-      return;
-    }
-
-    if (!this.isPlaying) {
+    if (this.isPlaying) {
+      // Toggle button while playing: Manual Stop / Freeze!
+      this.stopMusicAndFreeze();
+    } else {
+      // Start music!
       this.startMusicRound();
     }
   }
@@ -361,18 +371,27 @@ export class MusicalChairsGame {
   }
 
   startMusicRound() {
+    if (this.autoTimer) {
+      clearInterval(this.autoTimer);
+      this.autoTimer = null;
+    }
+
     this.isPlaying = true;
     this.isFrozen = false;
-    this.actionBtn.disabled = true;
+    this.actionBtn.disabled = false;
+    this.actionBtn.className = 'chairs-main-btn freeze';
+    this.actionBtn.innerHTML = `<span class="btn-icon">🛑</span><span class="btn-label">STOP MUSIC (FREEZE)</span>`;
     this.statusBadge.textContent = `🎵 Party Music Playing! Dance & race around the chairs! 💃🕺`;
     this.statusBadge.classList.remove('frozen');
 
     // Reset player poses to walking with different paces
-    this.playersState.forEach((p, idx) => {
-      p.pose = 'walking';
-      p.speechText = '';
-      p.stompPhase = 0;
-    });
+    if (this.playersState) {
+      this.playersState.forEach((p) => {
+        p.pose = 'walking';
+        p.speechText = '';
+        p.stompPhase = 0;
+      });
+    }
 
     this.playMusic();
 
@@ -391,6 +410,11 @@ export class MusicalChairsGame {
   }
 
   stopMusicAndFreeze() {
+    if (this.musicTimer) {
+      clearTimeout(this.musicTimer);
+      this.musicTimer = null;
+    }
+
     this.isPlaying = false;
     this.isFrozen = true;
     this.stopMusic();
@@ -418,29 +442,38 @@ export class MusicalChairsGame {
     }
 
     this.actionBtn.disabled = false;
-    this.actionBtn.className = 'chairs-main-btn freeze';
-    this.actionBtn.innerHTML = `<span class="btn-icon">❌</span><span class="btn-label">ELIMINATE "${outPlayer}"</span>`;
+    this.actionBtn.className = 'chairs-main-btn';
+    this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC</span>`;
 
     this.draw();
 
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onChairsAction(JSON.stringify({ action: 'freeze', standingPlayerIndex: outIdx })); } catch(e) {}
     }
+
+    // Auto-eliminate standing player after 2.8s stomp animation!
+    setTimeout(() => {
+      if (this.isFrozen) {
+        this.nextRound();
+      }
+    }, 2800);
   }
 
   triggerChairBattle(standingIndex) {
     let chairIdx = 0;
-    this.playersState.forEach((p, idx) => {
-      if (idx === standingIndex) {
-        p.pose = 'stomping';
-        p.stompPhase = 0;
-        p.speechText = "No fair! That was my chair! 😱🦶💥";
-      } else {
-        p.pose = 'seated';
-        p.speechText = "Got my seat! 😊🪑";
-        chairIdx++;
-      }
-    });
+    if (this.playersState) {
+      this.playersState.forEach((p, idx) => {
+        if (idx === standingIndex) {
+          p.pose = 'stomping';
+          p.stompPhase = 0;
+          p.speechText = "No fair! That was my chair! 😱🦶💥";
+        } else {
+          p.pose = 'seated';
+          p.speechText = "Got my seat! 😊🪑";
+          chairIdx++;
+        }
+      });
+    }
   }
 
   stopMusicAndFreezeRemote(presetStandingIndex) {
@@ -468,20 +501,33 @@ export class MusicalChairsGame {
     this.triggerChairBattle(outIdx);
 
     this.actionBtn.disabled = false;
-    this.actionBtn.className = 'chairs-main-btn freeze';
-    this.actionBtn.innerHTML = `<span class="btn-icon">❌</span><span class="btn-label">ELIMINATE "${outPlayer}"</span>`;
+    this.actionBtn.className = 'chairs-main-btn';
+    this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC</span>`;
 
     this.draw();
+
+    setTimeout(() => {
+      if (this.isFrozen) {
+        this.nextRound();
+      }
+    }, 2800);
   }
 
   nextRound() {
+    if (this.autoTimer) {
+      clearInterval(this.autoTimer);
+      this.autoTimer = null;
+    }
+
     if (this.standingPlayerIndex !== undefined && this.standingPlayerIndex >= 0) {
       const eliminated = this.activePlayers.splice(this.standingPlayerIndex, 1)[0];
       this.eliminatedPlayers.push(eliminated);
       this.standingPlayerIndex = -1;
     }
 
-    if (this.activePlayers.length === 1) {
+    const remainingCount = this.activePlayers.length;
+
+    if (remainingCount === 1) {
       this.winner = this.activePlayers[0];
       this.statusBadge.textContent = `👑 " ${this.winner} " IS THE MUSICAL CHAIRS CHAMPION! 🎉`;
       this.statusBadge.classList.add('winner');
@@ -500,16 +546,37 @@ export class MusicalChairsGame {
       return;
     }
 
-    this.chairsCount = Math.max(1, this.activePlayers.length - 1);
+    this.chairsCount = Math.max(1, remainingCount - 1);
     this.isFrozen = false;
     this.actionBtn.className = 'chairs-main-btn';
-    this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC</span>`;
-    this.statusBadge.textContent = `Round Ready: ${this.activePlayers.length} Players, ${this.chairsCount} Chairs 🪑`;
+    this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC (OR WAIT 10s)</span>`;
     this.statusBadge.classList.remove('frozen');
 
     this.initPlayersState();
     this.renderChips();
     this.draw();
+
+    // Declare remaining players out loud!
+    if (this.soundEngine) {
+      this.soundEngine.speak(`${remainingCount} players remaining! Next round starting in 10 seconds!`);
+    }
+
+    // Auto-start next round 10s countdown!
+    let secondsLeft = 10;
+    this.statusBadge.textContent = `Remaining: ${remainingCount} Players (${this.chairsCount} Chairs) | Next round in ${secondsLeft}s... ⏱️`;
+
+    this.autoTimer = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft > 0) {
+        this.statusBadge.textContent = `Remaining: ${remainingCount} Players (${this.chairsCount} Chairs) | Next round in ${secondsLeft}s... ⏱️`;
+      } else {
+        clearInterval(this.autoTimer);
+        this.autoTimer = null;
+        if (!this.isPlaying && !this.winner) {
+          this.startMusicRound();
+        }
+      }
+    }, 1000);
 
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onChairsAction(JSON.stringify({ action: 'next' })); } catch(e) {}
@@ -520,7 +587,6 @@ export class MusicalChairsGame {
     if (this.isPlaying) {
       this.danceAngle += 0.04;
 
-      // Update individual player walking speeds & angles
       if (this.playersState) {
         this.playersState.forEach((p, idx) => {
           p.speed = p.baseSpeed + Math.sin(Date.now() * 0.003 + idx * 2) * 0.008;
@@ -596,13 +662,11 @@ export class MusicalChairsGame {
       } else if (this.isFrozen) {
         isStanding = idx === this.standingPlayerIndex;
         if (isStanding) {
-          // Standing player stomping near chair 0!
           const chairAngle = -Math.PI / 2;
           const stompOffset = pState ? Math.sin(pState.stompPhase * 5) * 8 : 0;
           px = centerX + Math.cos(chairAngle) * (ringRadius - 10) + stompOffset;
           py = centerY + Math.sin(chairAngle) * (ringRadius - 10) - Math.abs(stompOffset);
         } else {
-          // Seated player sitting directly ON top of their chair!
           const chairIdx = idx > this.standingPlayerIndex ? idx - 1 : idx;
           const chairAngle = (chairIdx / totalChairs) * Math.PI * 2 - Math.PI / 2;
           px = centerX + Math.cos(chairAngle) * (ringRadius - 40);
@@ -615,7 +679,7 @@ export class MusicalChairsGame {
         isStanding = false;
       }
 
-      this.drawPlayerAvatar(px, py, name, idx, isStanding, pState);
+      this.drawPlayerAvatar(px, py, name, idx, isStanding, pState, centerX, centerY);
     });
 
     if (this.winner) {
@@ -667,7 +731,7 @@ export class MusicalChairsGame {
     ctx.restore();
   }
 
-  drawPlayerAvatar(x, y, name, index, isStanding, pState) {
+  drawPlayerAvatar(x, y, name, index, isStanding, pState, centerX, centerY) {
     const ctx = this.ctx;
     ctx.save();
     ctx.translate(x, y);
@@ -680,7 +744,6 @@ export class MusicalChairsGame {
       ctx.shadowColor = '#FF0055';
       ctx.shadowBlur = 35;
 
-      // Stomp shockwave dust ring
       ctx.strokeStyle = 'rgba(255, 0, 85, 0.6)';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -696,7 +759,6 @@ export class MusicalChairsGame {
       ctx.lineWidth = 3.5;
       ctx.stroke();
 
-      // Emoji & Speech bubble
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '18px system-ui';
       ctx.textAlign = 'center';
@@ -709,7 +771,7 @@ export class MusicalChairsGame {
       ctx.strokeStyle = '#FF0055';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.roundRect(-70, -58, 140, 26, 12);
+      ctx.roundRect(-75, -58, 150, 26, 12);
       ctx.fill();
       ctx.stroke();
 
@@ -731,7 +793,6 @@ export class MusicalChairsGame {
       ctx.lineWidth = 2.5;
       ctx.stroke();
 
-      // Seated Happy Emoji
       ctx.fillStyle = '#FFFFFF';
       ctx.font = '16px system-ui';
       ctx.textAlign = 'center';
@@ -758,11 +819,21 @@ export class MusicalChairsGame {
       ctx.fillText('💃', 0, 0);
     }
 
+    // Radial offset outward away from circle center so name tag never overlaps chairs or avatars!
+    const dx = x - centerX;
+    const dy = y - centerY;
+    const radAngle = Math.atan2(dy, dx);
+    const textDist = 42; // Outward offset from avatar center
+    const labelX = Math.cos(radAngle) * textDist;
+    const labelY = Math.sin(radAngle) * textDist;
+
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 13px system-ui, -apple-system, sans-serif';
     ctx.shadowColor = '#000000';
-    ctx.shadowBlur = 4;
-    ctx.fillText(name, 0, 28);
+    ctx.shadowBlur = 6;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(name, labelX, labelY);
 
     ctx.restore();
   }
