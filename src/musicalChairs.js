@@ -18,7 +18,7 @@ export class MusicalChairsGame {
     this.animFrameId = null;
 
     this.musicSource = 'synth'; // 'synth' or 'youtube'
-    this.currentYtId = 'L0MK7qz13bU'; // Default: Frozen Let It Go
+    this.currentYtId = 'k4yXQkG2s1E'; // Default Party Track
     this.ytPlayer = null;
     this.ytReady = false;
 
@@ -50,10 +50,11 @@ export class MusicalChairsGame {
           </div>
 
           <div class="yt-input-container" id="yt-input-container" style="display: none;">
-            <input type="text" id="chairs-yt-input" placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=L0MK7qz13bU)..." value="https://www.youtube.com/watch?v=L0MK7qz13bU" />
+            <input type="text" id="chairs-yt-input" placeholder="Paste YouTube link..." value="https://youtu.be/k4yXQkG2s1E?si=u70ArNQ7LcE9aSY0" />
             <button id="chairs-load-yt-btn" class="btn-secondary">🎵 Load Song</button>
             <select id="chairs-yt-preset" class="theme-select-input">
               <option value="">✨ Quick Presets</option>
+              <option value="k4yXQkG2s1E">🔥 Default Party Beat Track</option>
               <option value="L0MK7qz13bU">👑 Frozen — Let It Go</option>
               <option value="XqZsoesa55w">🦈 Baby Shark Party Beat</option>
               <option value="KQ6zr6kCPj8">💃 Party Rock Anthem</option>

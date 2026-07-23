@@ -23,16 +23,24 @@ class App {
       {
         title: 'Action / Task',
         options: [
-          '👑 Sing "Let It Go"',
-          '🧚 Magical Fairy Spin',
-          '🦄 Gallop Like Unicorn',
-          '💃 Princess Dance',
-          '🐰 Hop 5x Like Bunny',
-          '🌟 Pose Like Superstar',
-          '💖 Give a Big Hug',
-          '🎨 Draw Air Heart',
-          '👑 Finger Crown Pose',
-          '🐱 Meow Like Kitty'
+          'Sing Your Favorite Song',
+          'FIVE 5 High Fives in 3 Seconds!',
+          'Show Your Best Dance Move',
+          'Mimic Someone in the Room',
+          'Impersonate Your Mother',
+          'Tell a Joke & Make Us Laugh',
+          'Name 5 Neighbors of India',
+          'Hop Around Like a Rabbit',
+          'Tell a Short Story About God',
+          'Recite a Quick Poem',
+          '1 Sentence in 3 Languages',
+          'Name Everyone Alphabetically',
+          'Start a Whispering Chain',
+          'Mirror Someone\'s Moves',
+          'Spell K, O, R with Your Body',
+          'Act Like a Mute Teacher',
+          'Say a Tongue Twister Fast',
+          'Write Your Name With Your Nose'
         ]
       },
       {
