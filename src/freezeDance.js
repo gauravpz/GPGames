@@ -238,26 +238,38 @@ export class FreezeDanceGame {
     // Freezes 1-3: 10 seconds
     // Freezes 4-7: 7 seconds
     // Freeze 8+: 5 seconds till song ends
-    let freezeDurationMs = 5000;
-    let durationText = "5s";
-
+    let freezeSeconds = 5;
     if (this.freezeCount <= 3) {
-      freezeDurationMs = 10000;
-      durationText = "10s";
+      freezeSeconds = 10;
     } else if (this.freezeCount <= 7) {
-      freezeDurationMs = 7000;
-      durationText = "7s";
+      freezeSeconds = 7;
     }
 
     // Keep video 100% unobstructed (no text card blocking video frame)
     if (this.overlay) this.overlay.style.display = 'none';
-    this.statusBadge.textContent = `🧊 FREEZE! (${durationText}) Are you in the same pose as on the screen? 🛑`;
     this.statusBadge.classList.add('frozen');
 
-    this.freezeTimer = setTimeout(() => {
-      if (!this.isPlaying) return;
-      this.resumeDance();
-    }, freezeDurationMs);
+    if (this.freezeCountdownInterval) {
+      clearInterval(this.freezeCountdownInterval);
+      this.freezeCountdownInterval = null;
+    }
+
+    // Live second-by-second countdown ticker badge!
+    let remainingSeconds = freezeSeconds;
+    this.statusBadge.textContent = `🧊 FREEZE! Countdown: ${remainingSeconds}s... ⏱️`;
+
+    this.freezeCountdownInterval = setInterval(() => {
+      remainingSeconds--;
+      if (remainingSeconds > 0) {
+        this.statusBadge.textContent = `🧊 FREEZE! Countdown: ${remainingSeconds}s... ⏱️`;
+      } else {
+        clearInterval(this.freezeCountdownInterval);
+        this.freezeCountdownInterval = null;
+        if (this.isPlaying && this.isPaused) {
+          this.resumeDance();
+        }
+      }
+    }, 1000);
 
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onFreezeDanceAction(JSON.stringify({ action: 'freeze' })); } catch(e) {}
@@ -265,9 +277,14 @@ export class FreezeDanceGame {
   }
 
   resumeDance() {
+    if (this.freezeCountdownInterval) {
+      clearInterval(this.freezeCountdownInterval);
+      this.freezeCountdownInterval = null;
+    }
+
     this.isPaused = false;
     this.isFirstFreeze = false;
-    this.overlay.style.display = 'none';
+    if (this.overlay) this.overlay.style.display = 'none';
 
     this.statusBadge.textContent = `🎵 MUSIC RESUMED! Next Freeze in 10s! 💃🕺⚡`;
     this.statusBadge.classList.remove('frozen');
@@ -291,6 +308,10 @@ export class FreezeDanceGame {
     if (this.freezeTimer) {
       clearTimeout(this.freezeTimer);
       this.freezeTimer = null;
+    }
+    if (this.freezeCountdownInterval) {
+      clearInterval(this.freezeCountdownInterval);
+      this.freezeCountdownInterval = null;
     }
 
     this.isPlaying = false;
