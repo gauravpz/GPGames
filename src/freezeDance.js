@@ -234,17 +234,30 @@ export class FreezeDanceGame {
       }
     }
 
+    // Freeze Duration Progression:
+    // Freezes 1-3: 10 seconds
+    // Freezes 4-7: 7 seconds
+    // Freeze 8+: 5 seconds till song ends
+    let freezeDurationMs = 5000;
+    let durationText = "5s";
+
+    if (this.freezeCount <= 3) {
+      freezeDurationMs = 10000;
+      durationText = "10s";
+    } else if (this.freezeCount <= 7) {
+      freezeDurationMs = 7000;
+      durationText = "7s";
+    }
+
     // Keep video 100% unobstructed (no text card blocking video frame)
     if (this.overlay) this.overlay.style.display = 'none';
-    this.statusBadge.textContent = `🧊 FREEZE! (3s-5s) Are you in the same pose as on the screen? 🛑`;
+    this.statusBadge.textContent = `🧊 FREEZE! (${durationText}) Are you in the same pose as on the screen? 🛑`;
     this.statusBadge.classList.add('frozen');
 
-    // Freeze phase: stay paused for random 3s to 5s
-    const freezeDuration = Math.floor(Math.random() * 2000 + 3000);
     this.freezeTimer = setTimeout(() => {
       if (!this.isPlaying) return;
       this.resumeDance();
-    }, freezeDuration);
+    }, freezeDurationMs);
 
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onFreezeDanceAction(JSON.stringify({ action: 'freeze' })); } catch(e) {}
