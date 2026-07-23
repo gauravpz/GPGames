@@ -2128,12 +2128,12 @@ body.tv-mode #paper-remove-picked-badge-btn {
 .freeze-stage-container {
   position: relative;
   width: 100%;
-  height: clamp(520px, 75vh, 750px);
+  height: clamp(650px, 86vh, 960px);
   background: #000000;
   border: 2px solid rgba(0, 240, 255, 0.6);
   border-radius: var(--radius-md);
   overflow: hidden;
-  box-shadow: 0 0 35px rgba(0, 240, 255, 0.3);
+  box-shadow: 0 0 35px rgba(0, 240, 255, 0.4);
 }
 
 .freeze-video-frame {
