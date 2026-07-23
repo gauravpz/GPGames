@@ -377,16 +377,23 @@ export class MusicalChairsGame {
       clearInterval(this.autoTimer);
       this.autoTimer = null;
     }
+    if (this.intervalTimer) {
+      clearTimeout(this.intervalTimer);
+      this.intervalTimer = null;
+    }
 
     this.isPlaying = true;
     this.isFrozen = false;
+    this.isIntervalPaused = false;
+    this.roundStartTime = Date.now();
+    this.totalRoundDuration = Math.floor(Math.random() * 12000 + 16000); // 16s - 28s round length
+
     this.actionBtn.disabled = false;
     this.actionBtn.className = 'chairs-main-btn freeze';
     this.actionBtn.innerHTML = `<span class="btn-icon">🛑</span><span class="btn-label">STOP MUSIC (FREEZE)</span>`;
-    this.statusBadge.textContent = `🎵 Party Music Playing! Dance & race around the chairs! 💃🕺`;
+    this.statusBadge.textContent = `🎵 Party Music Playing! Dance & race around the chairs! 🏃💨`;
     this.statusBadge.classList.remove('frozen');
 
-    // Reset player poses to walking with different paces
     if (this.playersState) {
       this.playersState.forEach((p) => {
         p.pose = 'walking';
@@ -398,10 +405,7 @@ export class MusicalChairsGame {
     this.playMusic();
 
     if (!this._skipBridge) {
-      const duration = Math.floor(Math.random() * 11000 + 7000);
-      this.musicTimer = setTimeout(() => {
-        this.stopMusicAndFreeze();
-      }, duration);
+      this.scheduleRandomInterval();
     }
 
     this.animate();
@@ -411,14 +415,53 @@ export class MusicalChairsGame {
     }
   }
 
+  scheduleRandomInterval() {
+    if (!this.isPlaying) return;
+
+    const elapsedTime = Date.now() - this.roundStartTime;
+    if (elapsedTime >= this.totalRoundDuration) {
+      this.stopMusicAndFreeze();
+      return;
+    }
+
+    if (!this.isIntervalPaused) {
+      // Music playing phase: play for random 3.5s - 7s
+      const playDuration = Math.floor(Math.random() * 3500 + 3500);
+      this.intervalTimer = setTimeout(() => {
+        if (!this.isPlaying) return;
+        this.isIntervalPaused = true;
+        this.stopMusic();
+        if (this.soundEngine) this.soundEngine.playWhistle();
+        this.statusBadge.textContent = "🛑 PAUSE! Music stopped! Freeze in place! 🧊";
+        this.statusBadge.classList.add('frozen');
+
+        // Pause phase: freeze for random 2.5s - 4.5s
+        const pauseDuration = Math.floor(Math.random() * 2000 + 2500);
+        this.intervalTimer = setTimeout(() => {
+          if (!this.isPlaying) return;
+          this.isIntervalPaused = false;
+          this.playMusic();
+          this.statusBadge.textContent = "🎵 Music Resumed! Dance & walk around chairs! 🏃💨";
+          this.statusBadge.classList.remove('frozen');
+          this.scheduleRandomInterval();
+        }, pauseDuration);
+      }, playDuration);
+    }
+  }
+
   stopMusicAndFreeze() {
     if (this.musicTimer) {
       clearTimeout(this.musicTimer);
       this.musicTimer = null;
     }
+    if (this.intervalTimer) {
+      clearTimeout(this.intervalTimer);
+      this.intervalTimer = null;
+    }
 
     this.isPlaying = false;
     this.isFrozen = true;
+    this.isIntervalPaused = false;
     this.stopMusic();
 
     if (this.soundEngine) {
@@ -738,11 +781,26 @@ export class MusicalChairsGame {
     ctx.save();
     ctx.translate(x, y);
 
-    const colors = ['#FF2E93', '#00F0FF', '#00FF66', '#FFE600', '#FF8A00', '#7000FF', '#00D2FF'];
-    const color = colors[index % colors.length];
+    const ANIMAL_AVATARS = [
+      { emoji: '🦁', color: '#FF8A00' },
+      { emoji: '🐼', color: '#00F0FF' },
+      { emoji: '🦊', color: '#FF2E93' },
+      { emoji: '🐯', color: '#FFE600' },
+      { emoji: '🐸', color: '#00FF66' },
+      { emoji: '🐰', color: '#7000FF' },
+      { emoji: '🦄', color: '#FF00A8' },
+      { emoji: '🐵', color: '#FF6B00' },
+      { emoji: '🐶', color: '#00D2FF' },
+      { emoji: '🐱', color: '#FF3366' },
+      { emoji: '🐻', color: '#8B4513' },
+      { emoji: '🐘', color: '#94A3B8' }
+    ];
+
+    const animal = ANIMAL_AVATARS[index % ANIMAL_AVATARS.length];
+    const color = animal.color;
 
     if (isStanding) {
-      // Stomping / Thrown Player Animation
+      // Stomping Animal Animation
       ctx.shadowColor = '#FF0055';
       ctx.shadowBlur = 35;
 
@@ -754,7 +812,7 @@ export class MusicalChairsGame {
 
       ctx.fillStyle = '#FF0055';
       ctx.beginPath();
-      ctx.arc(0, 0, 28, 0, Math.PI * 2);
+      ctx.arc(0, 0, 26, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = '#FFFFFF';
@@ -762,14 +820,14 @@ export class MusicalChairsGame {
       ctx.stroke();
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '18px system-ui';
+      ctx.font = '22px system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('🦶💥', 0, 0);
+      ctx.fillText(animal.emoji, 0, 0);
 
       // Speech bubble
       ctx.save();
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
       ctx.strokeStyle = '#FF0055';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
@@ -782,9 +840,9 @@ export class MusicalChairsGame {
       ctx.fillText("No fair! That was my chair! 😱", 0, -45);
       ctx.restore();
     } else if (pState && pState.pose === 'seated') {
-      // Seated ON Chair Cushion Pose!
+      // Seated Animal Pose on Chair Cushion!
       ctx.shadowColor = '#00FF66';
-      ctx.shadowBlur = 20;
+      ctx.shadowBlur = 22;
 
       ctx.fillStyle = color;
       ctx.beginPath();
@@ -796,12 +854,12 @@ export class MusicalChairsGame {
       ctx.stroke();
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '16px system-ui';
+      ctx.font = '20px system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('😊', 0, -6);
+      ctx.fillText(animal.emoji, 0, -6);
     } else {
-      // Walking / Dancing Pose
+      // Walking Animal Pose
       ctx.shadowColor = color;
       ctx.shadowBlur = 14;
 
@@ -815,17 +873,17 @@ export class MusicalChairsGame {
       ctx.stroke();
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = '14px system-ui';
+      ctx.font = '20px system-ui';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('💃', 0, 0);
+      ctx.fillText(animal.emoji, 0, 0);
     }
 
     // Radial offset outward away from circle center so name tag never overlaps chairs or avatars!
     const dx = x - centerX;
     const dy = y - centerY;
     const radAngle = Math.atan2(dy, dx);
-    const textDist = 42; // Outward offset from avatar center
+    const textDist = 42;
     const labelX = Math.cos(radAngle) * textDist;
     const labelY = Math.sin(radAngle) * textDist;
 
