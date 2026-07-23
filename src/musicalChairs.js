@@ -288,6 +288,8 @@ export class MusicalChairsGame {
     this.isFrozen = false;
     this.winner = null;
 
+    this.initPlayersState();
+
     this.actionBtn.className = 'chairs-main-btn';
     this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC</span>`;
     this.actionBtn.disabled = false;
@@ -301,6 +303,20 @@ export class MusicalChairsGame {
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onChairsAction(JSON.stringify({ action: 'reset' })); } catch(e) {}
     }
+  }
+
+  initPlayersState() {
+    const total = this.activePlayers.length;
+    this.playersState = this.activePlayers.map((name, idx) => ({
+      name,
+      idx,
+      angle: (idx / total) * Math.PI * 2,
+      baseSpeed: 0.022 + (idx % 3) * 0.012,
+      speed: 0.022 + (idx % 3) * 0.012,
+      pose: 'walking', // 'walking', 'seated', 'stomping'
+      stompPhase: 0,
+      speechText: ''
+    }));
   }
 
   handleActionClick() {
@@ -348,13 +364,18 @@ export class MusicalChairsGame {
     this.isPlaying = true;
     this.isFrozen = false;
     this.actionBtn.disabled = true;
-    this.statusBadge.textContent = `🎵 Party Music Playing! Dance around the chairs! 💃🕺`;
+    this.statusBadge.textContent = `🎵 Party Music Playing! Dance & race around the chairs! 💃🕺`;
     this.statusBadge.classList.remove('frozen');
+
+    // Reset player poses to walking with different paces
+    this.playersState.forEach((p, idx) => {
+      p.pose = 'walking';
+      p.speechText = '';
+      p.stompPhase = 0;
+    });
 
     this.playMusic();
 
-    // Random music duration between 7s and 18s before freeze!
-    // Skip timer when triggered remotely — the phone controls timing and sends freeze.
     if (!this._skipBridge) {
       const duration = Math.floor(Math.random() * 11000 + 7000);
       this.musicTimer = setTimeout(() => {
@@ -364,7 +385,6 @@ export class MusicalChairsGame {
 
     this.animate();
 
-    // Notify TV if casting (skip if triggered remotely to prevent echo loop)
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onChairsAction(JSON.stringify({ action: 'start' })); } catch(e) {}
     }
@@ -373,14 +393,13 @@ export class MusicalChairsGame {
   stopMusicAndFreeze() {
     this.isPlaying = false;
     this.isFrozen = true;
-
     this.stopMusic();
 
     if (this.soundEngine) {
       this.soundEngine.playWhistle();
     }
 
-    this.statusBadge.textContent = `🛑 STOP! FREEZE & FIND A CHAIR! 🪑`;
+    this.statusBadge.textContent = `🛑 STOP! FREEZE & FIGHT FOR A CHAIR! 🪑💥`;
     this.statusBadge.classList.add('frozen');
 
     const randBuf = new Uint32Array(1);
@@ -389,8 +408,13 @@ export class MusicalChairsGame {
     this.standingPlayerIndex = outIdx;
     const outPlayer = this.activePlayers[outIdx];
 
+    // Trigger dramatic chair fight & sitting physics
+    this.triggerChairBattle(outIdx);
+
     if (this.soundEngine) {
       this.soundEngine.speak(`Freeze! ${outPlayer} was left standing!`);
+      this.soundEngine.playBoing();
+      setTimeout(() => this.soundEngine.playSlideWhistle(), 500);
     }
 
     this.actionBtn.disabled = false;
@@ -399,16 +423,26 @@ export class MusicalChairsGame {
 
     this.draw();
 
-    // Notify TV of the freeze and who's standing (skip if triggered remotely)
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onChairsAction(JSON.stringify({ action: 'freeze', standingPlayerIndex: outIdx })); } catch(e) {}
     }
   }
 
-  /**
-   * Freeze variant for TV-side remote triggering — uses a preset standingPlayerIndex
-   * so both phone and TV land on exactly the same eliminated player.
-   */
+  triggerChairBattle(standingIndex) {
+    let chairIdx = 0;
+    this.playersState.forEach((p, idx) => {
+      if (idx === standingIndex) {
+        p.pose = 'stomping';
+        p.stompPhase = 0;
+        p.speechText = "No fair! That was my chair! 😱🦶💥";
+      } else {
+        p.pose = 'seated';
+        p.speechText = "Got my seat! 😊🪑";
+        chairIdx++;
+      }
+    });
+  }
+
   stopMusicAndFreezeRemote(presetStandingIndex) {
     if (this.musicTimer) {
       clearTimeout(this.musicTimer);
@@ -416,14 +450,13 @@ export class MusicalChairsGame {
     }
     this.isPlaying = false;
     this.isFrozen = true;
-
     this.stopMusic();
 
     if (this.soundEngine) {
       this.soundEngine.playWhistle();
     }
 
-    this.statusBadge.textContent = `🛑 STOP! FREEZE & FIND A CHAIR! 🪑`;
+    this.statusBadge.textContent = `🛑 STOP! FREEZE & FIGHT FOR A CHAIR! 🪑💥`;
     this.statusBadge.classList.add('frozen');
 
     const outIdx = (typeof presetStandingIndex === 'number' && presetStandingIndex >= 0 && presetStandingIndex < this.activePlayers.length)
@@ -431,6 +464,8 @@ export class MusicalChairsGame {
       : 0;
     this.standingPlayerIndex = outIdx;
     const outPlayer = this.activePlayers[outIdx];
+
+    this.triggerChairBattle(outIdx);
 
     this.actionBtn.disabled = false;
     this.actionBtn.className = 'chairs-main-btn freeze';
@@ -459,6 +494,7 @@ export class MusicalChairsGame {
 
       this.actionBtn.className = 'chairs-main-btn winner';
       this.actionBtn.innerHTML = `<span class="btn-icon">👑</span><span class="btn-label">PLAY AGAIN</span>`;
+      this.initPlayersState();
       this.renderChips();
       this.draw();
       return;
@@ -471,10 +507,10 @@ export class MusicalChairsGame {
     this.statusBadge.textContent = `Round Ready: ${this.activePlayers.length} Players, ${this.chairsCount} Chairs 🪑`;
     this.statusBadge.classList.remove('frozen');
 
+    this.initPlayersState();
     this.renderChips();
     this.draw();
 
-    // Notify TV if casting (skip if triggered remotely to prevent echo loop)
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onChairsAction(JSON.stringify({ action: 'next' })); } catch(e) {}
     }
@@ -483,6 +519,25 @@ export class MusicalChairsGame {
   animate() {
     if (this.isPlaying) {
       this.danceAngle += 0.04;
+
+      // Update individual player walking speeds & angles
+      if (this.playersState) {
+        this.playersState.forEach((p, idx) => {
+          p.speed = p.baseSpeed + Math.sin(Date.now() * 0.003 + idx * 2) * 0.008;
+          p.angle += p.speed;
+        });
+      }
+
+      this.draw();
+      this.animFrameId = requestAnimationFrame(() => this.animate());
+    } else if (this.isFrozen) {
+      if (this.playersState) {
+        this.playersState.forEach(p => {
+          if (p.pose === 'stomping') {
+            p.stompPhase += 0.12;
+          }
+        });
+      }
       this.draw();
       this.animFrameId = requestAnimationFrame(() => this.animate());
     }
@@ -507,9 +562,9 @@ export class MusicalChairsGame {
 
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-    // Expanded ring radius so stage is prominent on large desktop and mobile screens
     const ringRadius = Math.min(this.width * 0.38, this.height * 0.38);
 
+    // Draw Ring Path
     ctx.save();
     ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
     ctx.lineWidth = 5;
@@ -518,6 +573,7 @@ export class MusicalChairsGame {
     ctx.stroke();
     ctx.restore();
 
+    // 1. Draw Chairs
     const totalChairs = this.winner ? 1 : this.chairsCount;
     for (let i = 0; i < totalChairs; i++) {
       const angle = (i / totalChairs) * Math.PI * 2 - Math.PI / 2;
@@ -527,20 +583,39 @@ export class MusicalChairsGame {
       this.drawChair(cx, cy, i);
     }
 
+    // 2. Draw Active Players (walking, seated, or stomping)
     const totalPlayers = this.activePlayers.length;
     this.activePlayers.forEach((name, idx) => {
-      let angle;
-      if (this.isPlaying) {
-        angle = (idx / totalPlayers) * Math.PI * 2 + this.danceAngle;
+      const pState = (this.playersState && this.playersState[idx]) ? this.playersState[idx] : null;
+      let px, py, isStanding;
+
+      if (this.isPlaying && pState) {
+        px = centerX + Math.cos(pState.angle) * ringRadius;
+        py = centerY + Math.sin(pState.angle) * ringRadius;
+        isStanding = false;
+      } else if (this.isFrozen) {
+        isStanding = idx === this.standingPlayerIndex;
+        if (isStanding) {
+          // Standing player stomping near chair 0!
+          const chairAngle = -Math.PI / 2;
+          const stompOffset = pState ? Math.sin(pState.stompPhase * 5) * 8 : 0;
+          px = centerX + Math.cos(chairAngle) * (ringRadius - 10) + stompOffset;
+          py = centerY + Math.sin(chairAngle) * (ringRadius - 10) - Math.abs(stompOffset);
+        } else {
+          // Seated player sitting directly ON top of their chair!
+          const chairIdx = idx > this.standingPlayerIndex ? idx - 1 : idx;
+          const chairAngle = (chairIdx / totalChairs) * Math.PI * 2 - Math.PI / 2;
+          px = centerX + Math.cos(chairAngle) * (ringRadius - 40);
+          py = centerY + Math.sin(chairAngle) * (ringRadius - 40) - 10;
+        }
       } else {
-        angle = (idx / totalPlayers) * Math.PI * 2 - Math.PI / 2;
+        const angle = (idx / totalPlayers) * Math.PI * 2 - Math.PI / 2;
+        px = centerX + Math.cos(angle) * ringRadius;
+        py = centerY + Math.sin(angle) * ringRadius;
+        isStanding = false;
       }
 
-      const px = centerX + Math.cos(angle) * ringRadius;
-      const py = centerY + Math.sin(angle) * ringRadius;
-
-      const isStanding = this.isFrozen && idx === this.standingPlayerIndex;
-      this.drawPlayerAvatar(px, py, name, idx, isStanding);
+      this.drawPlayerAvatar(px, py, name, idx, isStanding, pState);
     });
 
     if (this.winner) {
@@ -567,6 +642,7 @@ export class MusicalChairsGame {
     ctx.shadowColor = '#00F0FF';
     ctx.shadowBlur = 15;
 
+    // Chair Seat Cushion
     ctx.fillStyle = '#7000FF';
     ctx.beginPath();
     ctx.roundRect(-22, -12, 44, 30, 8);
@@ -576,6 +652,7 @@ export class MusicalChairsGame {
     ctx.lineWidth = 2.5;
     ctx.stroke();
 
+    // Chair Backrest
     ctx.fillStyle = '#FF2E93';
     ctx.beginPath();
     ctx.roundRect(-18, -28, 36, 16, 5);
@@ -590,7 +667,7 @@ export class MusicalChairsGame {
     ctx.restore();
   }
 
-  drawPlayerAvatar(x, y, name, index, isStanding) {
+  drawPlayerAvatar(x, y, name, index, isStanding, pState) {
     const ctx = this.ctx;
     ctx.save();
     ctx.translate(x, y);
@@ -599,8 +676,16 @@ export class MusicalChairsGame {
     const color = colors[index % colors.length];
 
     if (isStanding) {
+      // Stomping / Thrown Player Animation
       ctx.shadowColor = '#FF0055';
-      ctx.shadowBlur = 30;
+      ctx.shadowBlur = 35;
+
+      // Stomp shockwave dust ring
+      ctx.strokeStyle = 'rgba(255, 0, 85, 0.6)';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 15, 28, 0, Math.PI * 2);
+      ctx.stroke();
 
       ctx.fillStyle = '#FF0055';
       ctx.beginPath();
@@ -610,7 +695,50 @@ export class MusicalChairsGame {
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 3.5;
       ctx.stroke();
+
+      // Emoji & Speech bubble
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '18px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🦶💥', 0, 0);
+
+      // Speech bubble
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.strokeStyle = '#FF0055';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-70, -58, 140, 26, 12);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 11px system-ui';
+      ctx.fillText("No fair! That was my chair! 😱", 0, -45);
+      ctx.restore();
+    } else if (pState && pState.pose === 'seated') {
+      // Seated ON Chair Cushion Pose!
+      ctx.shadowColor = '#00FF66';
+      ctx.shadowBlur = 20;
+
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(0, -6, 24, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      // Seated Happy Emoji
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '16px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('😊', 0, -6);
     } else {
+      // Walking / Dancing Pose
       ctx.shadowColor = color;
       ctx.shadowBlur = 14;
 
@@ -622,13 +750,13 @@ export class MusicalChairsGame {
       ctx.strokeStyle = '#FFFFFF';
       ctx.lineWidth = 2.5;
       ctx.stroke();
-    }
 
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '14px system-ui';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(isStanding ? '🏃' : '💃', 0, 0);
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '14px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💃', 0, 0);
+    }
 
     ctx.fillStyle = '#FFFFFF';
     ctx.font = 'bold 13px system-ui, -apple-system, sans-serif';
