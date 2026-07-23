@@ -137,6 +137,13 @@ export class MusicalChairsGame {
     this._skipBridge = false;
   }
 
+  setOptions(options) {
+    if (!Array.isArray(options) || options.length === 0) return;
+    this.options = options.map(opt => typeof opt === 'string' ? opt : (opt.text || String(opt)));
+    if (this.inputField) this.inputField.value = this.options.join(' ');
+    this.resetGame();
+  }
+
   resetGame() {
     if (this.musicTimer) {
       clearTimeout(this.musicTimer);

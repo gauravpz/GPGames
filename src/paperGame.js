@@ -156,7 +156,7 @@ export class PaperGame {
   /** Set options from TV remote sync — updates the game without triggering bridge back */
   setOptions(options) {
     if (!Array.isArray(options) || options.length === 0) return;
-    this.options = options.map(String);
+    this.options = options.map(opt => typeof opt === 'string' ? opt : (opt.text || String(opt)));
     if (this.inputField) this.inputField.value = this.options.join(' ');
     this.resetStack();
     this.renderChips();

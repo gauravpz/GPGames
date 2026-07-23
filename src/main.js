@@ -59,12 +59,13 @@ class App {
   }
 
   syncPlayerListToGames() {
-    const players = this.wheelConfigs[0]?.options;
-    if (!Array.isArray(players) || players.length === 0) return;
-    if (this.paperGame) {
+    const rawPlayers = this.wheelConfigs[0]?.options;
+    if (!Array.isArray(rawPlayers) || rawPlayers.length === 0) return;
+    const players = rawPlayers.map(opt => typeof opt === 'string' ? opt : (opt.text || String(opt)));
+    if (this.paperGame && typeof this.paperGame.setOptions === 'function') {
       this.paperGame.setOptions(players);
     }
-    if (this.chairsGame) {
+    if (this.chairsGame && typeof this.chairsGame.setOptions === 'function') {
       this.chairsGame.setOptions(players);
     }
   }
