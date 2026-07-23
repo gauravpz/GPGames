@@ -4,7 +4,7 @@ import { ParticleSystem } from './particles.js';
 import { PaperGame } from './paperGame.js';
 import { MusicalChairsGame } from './musicalChairs.js';
 
-const STORAGE_KEY = 'spinverse_data';
+const STORAGE_KEY = 'spinverse_data_v6.0';
 
 class App {
   constructor() {
