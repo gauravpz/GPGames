@@ -17,7 +17,7 @@ export class MusicalChairsGame {
     this.danceAngle = 0;
     this.animFrameId = null;
 
-    this.musicSource = 'synth'; // 'synth' or 'youtube'
+    this.musicSource = 'youtube'; // Default: YouTube Song Link
     this.currentYtId = 'k4yXQkG2s1E'; // Default Party Track
     this.ytPlayer = null;
     this.ytReady = false;
@@ -25,6 +25,7 @@ export class MusicalChairsGame {
     this.initDOM();
     this.initCanvas();
     this.bindEvents();
+    this.loadYouTubeVideo();
     this.resetGame();
   }
 
@@ -45,11 +46,11 @@ export class MusicalChairsGame {
         <div class="music-source-bar">
           <div class="music-source-toggles">
             <span class="source-label">🎵 Music Source:</span>
-            <button id="src-synth-btn" class="music-source-btn active">🎹 Built-in Synth BGM</button>
-            <button id="src-yt-btn" class="music-source-btn">▶️ YouTube Song Link</button>
+            <button id="src-synth-btn" class="music-source-btn">🎹 Built-in Synth BGM</button>
+            <button id="src-yt-btn" class="music-source-btn active">▶️ YouTube Song Link</button>
           </div>
 
-          <div class="yt-input-container" id="yt-input-container" style="display: none;">
+          <div class="yt-input-container" id="yt-input-container" style="display: flex;">
             <input type="text" id="chairs-yt-input" placeholder="Paste YouTube link..." value="https://youtu.be/k4yXQkG2s1E?si=u70ArNQ7LcE9aSY0" />
             <button id="chairs-load-yt-btn" class="btn-secondary">🎵 Load Song</button>
             <select id="chairs-yt-preset" class="theme-select-input">
@@ -68,7 +69,7 @@ export class MusicalChairsGame {
           <canvas id="chairs-game-canvas"></canvas>
 
           <!-- Floating YouTube Video Window -->
-          <div id="yt-player-wrapper" class="youtube-chairs-player" style="display: none;">
+          <div id="yt-player-wrapper" class="youtube-chairs-player" style="display: block;">
             <div id="yt-player-frame"></div>
           </div>
 
