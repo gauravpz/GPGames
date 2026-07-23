@@ -24,7 +24,7 @@ class App {
         title: 'Action / Task',
         options: [
           'Sing Your Favorite Song',
-          'FIVE 5 High Fives in 3 Seconds!',
+          '5 High Fives in 3 Seconds!',
           'Show Your Best Dance Move',
           'Mimic Someone in the Room',
           'Impersonate Your Mother',
@@ -40,7 +40,9 @@ class App {
           'Spell K, O, R with Your Body',
           'Act Like a Mute Teacher',
           'Say a Tongue Twister Fast',
-          'Write Your Name With Your Nose'
+          'Write Your Name With Your Nose',
+          'Act like your teacher',
+          'Name 4 rivers'
         ]
       },
       {
