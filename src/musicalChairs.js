@@ -594,20 +594,20 @@ export class MusicalChairsGame {
     this.chairsCount = Math.max(1, remainingCount - 1);
     this.isFrozen = false;
     this.actionBtn.className = 'chairs-main-btn';
-    this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC (OR WAIT 10s)</span>`;
+    this.actionBtn.innerHTML = `<span class="btn-icon">▶️</span><span class="btn-label">START MUSIC (OR WAIT 5s)</span>`;
     this.statusBadge.classList.remove('frozen');
 
     this.initPlayersState();
     this.renderChips();
     this.draw();
 
-    // Declare remaining players out loud!
+    // Declare remaining players out loud (ONLY declare remaining count!)
     if (this.soundEngine) {
-      this.soundEngine.speak(`${remainingCount} players remaining! Next round starting in 10 seconds!`);
+      this.soundEngine.speak(`${remainingCount} players remaining!`);
     }
 
-    // Auto-start next round 10s countdown!
-    let secondsLeft = 10;
+    // Auto-start next round 5s countdown!
+    let secondsLeft = 5;
     this.statusBadge.textContent = `Remaining: ${remainingCount} Players (${this.chairsCount} Chairs) | Next round in ${secondsLeft}s... ⏱️`;
 
     this.autoTimer = setInterval(() => {
