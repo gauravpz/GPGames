@@ -1541,7 +1541,8 @@ body.tv-mode .tv-floating-exit-btn {
   backdrop-filter: blur(8px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   transition: all 0.3s ease;
-  align-self: flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .paper-winner-badge-header.revealed {
@@ -1552,6 +1553,8 @@ body.tv-mode .tv-floating-exit-btn {
   padding: 0.6rem 1.8rem;
   box-shadow: 0 0 30px rgba(255, 46, 147, 0.8);
   animation: pulseWinner 1.5s infinite alternate;
+  max-width: 100%;
+  word-break: break-word;
 }
 
 .fan-btn-inline {
@@ -1593,8 +1596,8 @@ body.tv-mode .tv-floating-exit-btn {
 }
 
 @keyframes pulseWinner {
-  from { transform: translateX(-50%) scale(1); }
-  to { transform: translateX(-50%) scale(1.05); }
+  from { transform: scale(1); }
+  to { transform: scale(1.04); }
 }
 
 /* 🎵 Musical Chairs Game Styles */
@@ -1725,7 +1728,7 @@ body.tv-mode .tv-floating-exit-btn {
 .chairs-stage-container {
   position: relative;
   width: 100%;
-  height: clamp(320px, 55vh, 480px);
+  height: clamp(420px, 60vh, 580px);
   background: radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1));
   border: 2px solid rgba(112, 0, 255, 0.6);
   border-radius: var(--radius-md);

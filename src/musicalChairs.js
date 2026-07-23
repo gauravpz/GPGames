@@ -362,11 +362,12 @@ export class MusicalChairsGame {
 
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-    const ringRadius = Math.min(this.width, this.height) * 0.32;
+    // Expanded ring radius so stage is prominent on large desktop and mobile screens
+    const ringRadius = Math.min(this.width * 0.38, this.height * 0.38);
 
     ctx.save();
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.2)';
-    ctx.lineWidth = 4;
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
+    ctx.lineWidth = 5;
     ctx.beginPath();
     ctx.arc(centerX, centerY, ringRadius, 0, Math.PI * 2);
     ctx.stroke();
@@ -375,8 +376,8 @@ export class MusicalChairsGame {
     const totalChairs = this.winner ? 1 : this.chairsCount;
     for (let i = 0; i < totalChairs; i++) {
       const angle = (i / totalChairs) * Math.PI * 2 - Math.PI / 2;
-      const cx = centerX + Math.cos(angle) * (ringRadius - 30);
-      const cy = centerY + Math.sin(angle) * (ringRadius - 30);
+      const cx = centerX + Math.cos(angle) * (ringRadius - 40);
+      const cy = centerY + Math.sin(angle) * (ringRadius - 40);
 
       this.drawChair(cx, cy, i);
     }
@@ -400,15 +401,15 @@ export class MusicalChairsGame {
     if (this.winner) {
       ctx.save();
       ctx.fillStyle = '#FFE600';
-      ctx.font = 'bold 28px system-ui, -apple-system, sans-serif';
+      ctx.font = 'bold 36px system-ui, -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.shadowColor = '#FF2E93';
-      ctx.shadowBlur = 20;
-      ctx.fillText(`👑 ${this.winner}`, centerX, centerY - 10);
+      ctx.shadowBlur = 25;
+      ctx.fillText(`👑 ${this.winner}`, centerX, centerY - 15);
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 16px system-ui, -apple-system, sans-serif';
-      ctx.fillText('CHAMPION!', centerX, centerY + 20);
+      ctx.font = 'bold 20px system-ui, -apple-system, sans-serif';
+      ctx.fillText('CHAMPION!', centerX, centerY + 25);
       ctx.restore();
     }
   }
@@ -419,27 +420,27 @@ export class MusicalChairsGame {
     ctx.translate(x, y);
 
     ctx.shadowColor = '#00F0FF';
-    ctx.shadowBlur = 12;
+    ctx.shadowBlur = 15;
 
     ctx.fillStyle = '#7000FF';
     ctx.beginPath();
-    ctx.roundRect(-16, -8, 32, 22, 6);
+    ctx.roundRect(-22, -12, 44, 30, 8);
     ctx.fill();
 
     ctx.strokeStyle = '#00F0FF';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
 
     ctx.fillStyle = '#FF2E93';
     ctx.beginPath();
-    ctx.roundRect(-14, -20, 28, 12, 4);
+    ctx.roundRect(-18, -28, 36, 16, 5);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '12px system-ui';
+    ctx.font = '16px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText('🪑', 0, 6);
+    ctx.fillText('🪑', 0, 8);
 
     ctx.restore();
   }
@@ -454,27 +455,27 @@ export class MusicalChairsGame {
 
     if (isStanding) {
       ctx.shadowColor = '#FF0055';
-      ctx.shadowBlur = 25;
+      ctx.shadowBlur = 30;
 
       ctx.fillStyle = '#FF0055';
       ctx.beginPath();
-      ctx.arc(0, 0, 22, 0, Math.PI * 2);
+      ctx.arc(0, 0, 28, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 3.5;
       ctx.stroke();
     } else {
       ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 14;
 
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(0, 0, 18, 0, Math.PI * 2);
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = '#FFFFFF';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 2.5;
       ctx.stroke();
     }
 
