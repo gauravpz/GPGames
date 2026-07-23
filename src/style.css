@@ -1741,7 +1741,7 @@ body.tv-mode .tv-floating-exit-btn {
 .chairs-stage-container {
   position: relative;
   width: 100%;
-  height: clamp(420px, 60vh, 580px);
+  height: clamp(480px, 68vh, 660px);
   background: radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1));
   border: 2px solid rgba(112, 0, 255, 0.6);
   border-radius: var(--radius-md);

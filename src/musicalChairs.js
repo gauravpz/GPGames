@@ -673,58 +673,62 @@ export class MusicalChairsGame {
 
     const centerX = this.width / 2;
     const centerY = this.height / 2;
-    const ringRadius = Math.min(this.width * 0.38, this.height * 0.38);
+    // Expansive Oval Track: Fill screen horizontally and vertically!
+    const radiusX = Math.max(120, this.width * 0.42);
+    const radiusY = Math.max(120, this.height * 0.38);
 
-    // Draw Ring Path
+    // Draw Grand Oval Arena Track Path
     ctx.save();
-    ctx.strokeStyle = 'rgba(0, 240, 255, 0.25)';
-    ctx.lineWidth = 5;
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.3)';
+    ctx.lineWidth = 6;
+    ctx.shadowColor = '#00F0FF';
+    ctx.shadowBlur = 12;
     ctx.beginPath();
-    ctx.arc(centerX, centerY, ringRadius, 0, Math.PI * 2);
+    ctx.ellipse(centerX, centerY, radiusX, radiusY, 0, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
 
-    // 1. Draw Chairs
+    // 1. Draw Chairs Along Oval
     const totalChairs = this.winner ? 1 : this.chairsCount;
     for (let i = 0; i < totalChairs; i++) {
       const angle = (i / totalChairs) * Math.PI * 2 - Math.PI / 2;
-      const cx = centerX + Math.cos(angle) * (ringRadius - 40);
-      const cy = centerY + Math.sin(angle) * (ringRadius - 40);
+      const cx = centerX + Math.cos(angle) * (radiusX - 48);
+      const cy = centerY + Math.sin(angle) * (radiusY - 48);
 
       this.drawChair(cx, cy, i);
     }
 
-    // 2. Draw Active Players (walking, seated, or stomping)
+    // 2. Draw Active Players Along Oval (walking, seated, or stomping)
     const totalPlayers = this.activePlayers.length;
     this.activePlayers.forEach((name, idx) => {
       const pState = (this.playersState && this.playersState[idx]) ? this.playersState[idx] : null;
       let px, py, isStanding;
 
       if (this.isPlaying && pState) {
-        px = centerX + Math.cos(pState.angle) * ringRadius;
-        py = centerY + Math.sin(pState.angle) * ringRadius;
+        px = centerX + Math.cos(pState.angle) * radiusX;
+        py = centerY + Math.sin(pState.angle) * radiusY;
         isStanding = false;
       } else if (this.isFrozen) {
         isStanding = idx === this.standingPlayerIndex;
         if (isStanding) {
           const chairAngle = -Math.PI / 2;
           const stompOffset = pState ? Math.sin(pState.stompPhase * 5) * 8 : 0;
-          px = centerX + Math.cos(chairAngle) * (ringRadius - 10) + stompOffset;
-          py = centerY + Math.sin(chairAngle) * (ringRadius - 10) - Math.abs(stompOffset);
+          px = centerX + Math.cos(chairAngle) * (radiusX - 12) + stompOffset;
+          py = centerY + Math.sin(chairAngle) * (radiusY - 12) - Math.abs(stompOffset);
         } else {
           const chairIdx = idx > this.standingPlayerIndex ? idx - 1 : idx;
           const chairAngle = (chairIdx / totalChairs) * Math.PI * 2 - Math.PI / 2;
-          px = centerX + Math.cos(chairAngle) * (ringRadius - 40);
-          py = centerY + Math.sin(chairAngle) * (ringRadius - 40) - 10;
+          px = centerX + Math.cos(chairAngle) * (radiusX - 48);
+          py = centerY + Math.sin(chairAngle) * (radiusY - 48) - 10;
         }
       } else {
         const angle = (idx / totalPlayers) * Math.PI * 2 - Math.PI / 2;
-        px = centerX + Math.cos(angle) * ringRadius;
-        py = centerY + Math.sin(angle) * ringRadius;
+        px = centerX + Math.cos(angle) * radiusX;
+        py = centerY + Math.sin(angle) * radiusY;
         isStanding = false;
       }
 
-      this.drawPlayerAvatar(px, py, name, idx, isStanding, pState, centerX, centerY);
+      this.drawPlayerAvatar(px, py, name, idx, isStanding, pState, centerX, centerY, radiusX, radiusY);
     });
 
     if (this.winner) {
@@ -776,7 +780,7 @@ export class MusicalChairsGame {
     ctx.restore();
   }
 
-  drawPlayerAvatar(x, y, name, index, isStanding, pState, centerX, centerY) {
+  drawPlayerAvatar(x, y, name, index, isStanding, pState, centerX, centerY, radiusX = 1, radiusY = 1) {
     const ctx = this.ctx;
     ctx.save();
     ctx.translate(x, y);
@@ -879,11 +883,11 @@ export class MusicalChairsGame {
       ctx.fillText(animal.emoji, 0, 0);
     }
 
-    // Radial offset outward away from circle center so name tag never overlaps chairs or avatars!
-    const dx = x - centerX;
-    const dy = y - centerY;
+    // Radial offset outward away from oval center so name tag never overlaps chairs or avatars!
+    const dx = (x - centerX) / (radiusX || 1);
+    const dy = (y - centerY) / (radiusY || 1);
     const radAngle = Math.atan2(dy, dx);
-    const textDist = 42;
+    const textDist = 44;
     const labelX = Math.cos(radAngle) * textDist;
     const labelY = Math.sin(radAngle) * textDist;
 
