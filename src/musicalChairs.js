@@ -323,8 +323,8 @@ export class MusicalChairsGame {
       name,
       idx,
       angle: (idx / total) * Math.PI * 2,
-      baseSpeed: 0.022 + (idx % 3) * 0.012,
-      speed: 0.022 + (idx % 3) * 0.012,
+      baseSpeed: 0.010 + (idx % 3) * 0.005,
+      speed: 0.010 + (idx % 3) * 0.005,
       pose: 'walking', // 'walking', 'seated', 'stomping'
       stompPhase: 0,
       speechText: ''
@@ -586,11 +586,11 @@ export class MusicalChairsGame {
 
   animate() {
     if (this.isPlaying) {
-      this.danceAngle += 0.04;
+      this.danceAngle += 0.02;
 
       if (this.playersState) {
         this.playersState.forEach((p, idx) => {
-          p.speed = p.baseSpeed + Math.sin(Date.now() * 0.003 + idx * 2) * 0.008;
+          p.speed = p.baseSpeed + Math.sin(Date.now() * 0.002 + idx * 2) * 0.004;
           p.angle += p.speed;
         });
       }
