@@ -181,32 +181,33 @@ export class FreezeDanceGame {
 
     this.isPlaying = true;
     this.isPaused = false;
+    this.isFirstFreeze = true;
     this.freezeCount = 0;
     this.overlay.style.display = 'none';
 
     this.actionBtn.className = 'freeze-main-btn active';
     this.actionBtn.innerHTML = `<span class="btn-icon">🛑</span><span class="btn-label">STOP GAME</span>`;
 
-    this.statusBadge.textContent = `🎵 MUSIC PLAYING! Dance & jump like crazy! 💃🕺⚡`;
+    this.statusBadge.textContent = `🎵 MUSIC PLAYING! Dance & jump like crazy! (First Freeze in 20s) 💃🕺⚡`;
     this.statusBadge.classList.remove('frozen');
 
     if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
       this.ytPlayer.playVideo();
     }
 
-    this.scheduleRandomFreeze();
+    this.scheduleFreeze();
 
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onFreezeDanceAction(JSON.stringify({ action: 'start' })); } catch(e) {}
     }
   }
 
-  scheduleRandomFreeze() {
+  scheduleFreeze() {
     if (!this.isPlaying) return;
 
     if (!this.isPaused) {
-      // Dance phase: play for random 8s to 16s (lots of fun dancing time!)
-      const playDuration = Math.floor(Math.random() * 8000 + 8000);
+      // First freeze occurs 20s after song start; subsequent freezes occur every 10s!
+      const playDuration = this.isFirstFreeze ? 20000 : 10000;
       this.freezeTimer = setTimeout(() => {
         if (!this.isPlaying) return;
         this.triggerFreeze();
@@ -252,9 +253,10 @@ export class FreezeDanceGame {
 
   resumeDance() {
     this.isPaused = false;
+    this.isFirstFreeze = false;
     this.overlay.style.display = 'none';
 
-    this.statusBadge.textContent = `🎵 MUSIC RESUMED! Dance & jump like crazy! 💃🕺⚡`;
+    this.statusBadge.textContent = `🎵 MUSIC RESUMED! Next Freeze in 10s! 💃🕺⚡`;
     this.statusBadge.classList.remove('frozen');
 
     if (this.soundEngine) {
@@ -265,7 +267,7 @@ export class FreezeDanceGame {
       this.ytPlayer.playVideo();
     }
 
-    this.scheduleRandomFreeze();
+    this.scheduleFreeze();
 
     if (window.MobileBridge && !this._skipBridge) {
       try { window.MobileBridge.onFreezeDanceAction(JSON.stringify({ action: 'resume' })); } catch(e) {}
