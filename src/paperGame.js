@@ -8,6 +8,9 @@ export class PaperGame {
 
     this.options = ['Gaurav', 'Madhu', 'Papa', 'Mama', 'Anjali', 'Namith', 'Vashvi'];
     this.paperSlips = [];
+    this.poopItems = [];
+    this.fanBladeAngle = 0;
+    this.fanOscillation = 0;
     this.isFlying = false;
     this.isBirdActive = false;
     this.chosenIndex = -1;
@@ -939,6 +942,7 @@ export class PaperGame {
   }
 
   drawPoopItems() {
+    if (!Array.isArray(this.poopItems)) return;
     const ctx = this.ctx;
     const floorY = this.height - 55;
 
