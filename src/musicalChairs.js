@@ -324,8 +324,8 @@ export class MusicalChairsGame {
       name,
       idx,
       angle: (idx / total) * Math.PI * 2,
-      baseSpeed: 0.010 + (idx % 3) * 0.005,
-      speed: 0.010 + (idx % 3) * 0.005,
+      baseSpeed: 0.0035 + (idx % 3) * 0.0015,
+      speed: 0.0035 + (idx % 3) * 0.0015,
       pose: 'walking', // 'walking', 'seated', 'stomping'
       stompPhase: 0,
       speechText: ''
@@ -377,21 +377,17 @@ export class MusicalChairsGame {
       clearInterval(this.autoTimer);
       this.autoTimer = null;
     }
-    if (this.intervalTimer) {
-      clearTimeout(this.intervalTimer);
-      this.intervalTimer = null;
+    if (this.musicTimer) {
+      clearTimeout(this.musicTimer);
+      this.musicTimer = null;
     }
 
     this.isPlaying = true;
     this.isFrozen = false;
-    this.isIntervalPaused = false;
-    this.roundStartTime = Date.now();
-    this.totalRoundDuration = Math.floor(Math.random() * 12000 + 16000); // 16s - 28s round length
-
     this.actionBtn.disabled = false;
     this.actionBtn.className = 'chairs-main-btn freeze';
     this.actionBtn.innerHTML = `<span class="btn-icon">🛑</span><span class="btn-label">STOP MUSIC (FREEZE)</span>`;
-    this.statusBadge.textContent = `🎵 Party Music Playing! Dance & race around the chairs! 🏃💨`;
+    this.statusBadge.textContent = `🎵 Party Music Playing! Walk & race around the chairs! 🚶💨`;
     this.statusBadge.classList.remove('frozen');
 
     if (this.playersState) {
@@ -405,7 +401,10 @@ export class MusicalChairsGame {
     this.playMusic();
 
     if (!this._skipBridge) {
-      this.scheduleRandomInterval();
+      const duration = Math.floor(Math.random() * 12000 + 14000); // 14s - 26s continuous music!
+      this.musicTimer = setTimeout(() => {
+        this.stopMusicAndFreeze();
+      }, duration);
     }
 
     this.animate();
@@ -415,62 +414,14 @@ export class MusicalChairsGame {
     }
   }
 
-  scheduleRandomInterval() {
-    if (!this.isPlaying) return;
-
-    const elapsedTime = Date.now() - this.roundStartTime;
-    if (elapsedTime >= this.totalRoundDuration) {
-      this.stopMusicAndFreeze();
-      return;
-    }
-
-    if (!this.isIntervalPaused) {
-      // Music playing phase: play for random 3.5s - 7s
-      const playDuration = Math.floor(Math.random() * 3500 + 3500);
-      this.intervalTimer = setTimeout(() => {
-        if (!this.isPlaying) return;
-        this.isIntervalPaused = true;
-        this.stopMusic();
-        if (this.soundEngine) this.soundEngine.playWhistle();
-        this.statusBadge.textContent = "🛑 PAUSE! Music stopped! Freeze in place! 🧊";
-        this.statusBadge.classList.add('frozen');
-
-        if (this.playersState) {
-          this.playersState.forEach(p => { p.pose = 'frozen'; });
-        }
-
-        // Pause phase: freeze for random 2.5s - 4.5s
-        const pauseDuration = Math.floor(Math.random() * 2000 + 2500);
-        this.intervalTimer = setTimeout(() => {
-          if (!this.isPlaying) return;
-          this.isIntervalPaused = false;
-          this.playMusic();
-          this.statusBadge.textContent = "🎵 Music Resumed! Dance & walk around chairs! 🏃💨";
-          this.statusBadge.classList.remove('frozen');
-
-          if (this.playersState) {
-            this.playersState.forEach(p => { p.pose = 'walking'; });
-          }
-
-          this.scheduleRandomInterval();
-        }, pauseDuration);
-      }, playDuration);
-    }
-  }
-
   stopMusicAndFreeze() {
     if (this.musicTimer) {
       clearTimeout(this.musicTimer);
       this.musicTimer = null;
     }
-    if (this.intervalTimer) {
-      clearTimeout(this.intervalTimer);
-      this.intervalTimer = null;
-    }
 
     this.isPlaying = false;
     this.isFrozen = true;
-    this.isIntervalPaused = false;
     this.stopMusic();
 
     if (this.soundEngine) {
@@ -639,11 +590,11 @@ export class MusicalChairsGame {
 
   animate() {
     if (this.isPlaying) {
-      this.danceAngle += 0.02;
+      this.danceAngle += 0.005;
 
       if (this.playersState) {
         this.playersState.forEach((p, idx) => {
-          p.speed = p.baseSpeed + Math.sin(Date.now() * 0.002 + idx * 2) * 0.004;
+          p.speed = p.baseSpeed + Math.sin(Date.now() * 0.001 + idx * 2) * 0.001;
           p.angle += p.speed;
         });
       }
