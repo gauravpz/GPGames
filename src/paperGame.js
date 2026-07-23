@@ -187,6 +187,10 @@ export class PaperGame {
       vy: 0,
       angle: (Math.random() - 0.5) * 0.15,
       vAngle: 0,
+      rollAngle: Math.random() * Math.PI,
+      rollSpeed: (Math.random() - 0.5) * 0.1,
+      zDepth: Math.random() * 2,
+      scale: 1.0,
       width: Math.max(90, Math.min(150, name.length * 14 + 40)),
       height: 40,
       color: colors[idx % colors.length],
@@ -206,6 +210,8 @@ export class PaperGame {
       isWinking: false,
       stuntTimer: 0,
       stuntPhase: 0,
+      stuntType: 0,
+      stuntQuote: '',
       targetPaper: null
     };
 
@@ -219,18 +225,19 @@ export class PaperGame {
     this.windActive = true;
     this.fanBtn.classList.add('active', 'spinning');
     this.fanBtn.disabled = true;
-    this.winnerBadge.textContent = '🌀 Wind blowing papers into the sky...';
+    this.winnerBadge.textContent = '🌀 Swirling wind vortex blowing papers into the sky...';
 
     if (this.soundEngine) {
       this.soundEngine.playTick(1.2);
     }
 
-    // Launch papers into realistic fluttering air currents
+    // Launch papers into realistic 3D fluttering aerodynamic wind currents
     this.paperSlips.forEach((p, i) => {
       p.isLanded = false;
-      p.vx = (Math.random() - 0.5) * 16;
-      p.vy = -(Math.random() * 14 + 10);
-      p.vAngle = (Math.random() - 0.5) * 0.3;
+      p.vx = (Math.random() - 0.5) * 18;
+      p.vy = -(Math.random() * 16 + 11);
+      p.vAngle = (Math.random() - 0.5) * 0.35;
+      p.rollSpeed = (Math.random() - 0.5) * 0.22;
     });
 
     // Use preset index (TV remote) or pick a new one (phone initiator)
@@ -262,6 +269,17 @@ export class PaperGame {
     this.bird.targetPaper = this.paperSlips[this.chosenIndex];
     this.winnerBadge.textContent = '🕊️ Look! Carrier Bird is flying in!';
 
+    // Randomize Stunt type each time so stunts are different every spin!
+    this.bird.stuntType = Math.floor(Math.random() * 5);
+    const stuntQuotes = [
+      "Watch my Barrel Roll! 🌀🚀",
+      "Lightning Slalom Dash! ⚡🦅",
+      "Tornado Spiral Whirl! 🌪️✨",
+      "Rollercoaster Wave Dive! 🎢💥",
+      "Double Flip Somersault! 🤸🔥"
+    ];
+    this.bird.stuntQuote = stuntQuotes[this.bird.stuntType];
+
     if (this.soundEngine) {
       this.soundEngine.playTick(1.6);
     }
@@ -290,14 +308,24 @@ export class PaperGame {
       }
 
       if (this.windActive) {
-        // Active wind lift & realistic turbulence flutter
+        // Active wind lift & 3D aerodynamic leaf flutter
+        p.rollAngle += p.rollSpeed;
+        p.scale = 0.85 + Math.sin(p.rollAngle) * 0.25;
+
+        // Aerodynamic sideways gliding force when paper is tilted
+        p.vx += Math.sin(p.angle) * 0.22;
         p.x += p.vx;
         p.y += p.vy;
         p.angle += p.vAngle;
 
-        p.vy += 0.22; // gravity
-        p.vx += (Math.sin(Date.now() * 0.005 + idx * 1.5) * 0.75); // turbulent sway
-        p.vy += (Math.cos(Date.now() * 0.006 + idx * 1.2) * 0.4);
+        p.vy += 0.20; // gravity
+        p.vx += (Math.sin(Date.now() * 0.005 + idx * 1.5) * 0.85); // turbulent sway
+        p.vy += (Math.cos(Date.now() * 0.006 + idx * 1.2) * 0.45);
+
+        // Centrifugal wind vortex lift toward center
+        const centerX = this.width / 2;
+        const distFromCenter = centerX - p.x;
+        p.vx += distFromCenter * 0.0008;
 
         p.vx *= 0.98;
         p.vy *= 0.98;
@@ -340,20 +368,22 @@ export class PaperGame {
           p.y += p.vy;
           p.vy += 0.65; // Stronger gravity drop
           p.vx *= 0.92;
-          p.angle += (0 - p.angle) * 0.15; // Flatten out horizontally
+          p.angle += (0 - p.angle) * 0.18; // Flatten out horizontally
+          p.scale += (1.0 - p.scale) * 0.15;
 
           if (p.y >= floorY - (idx * 2)) {
             p.y = floorY - (idx * 2);
             p.vy = 0;
             p.vx = 0;
             p.angle = 0;
+            p.scale = 1.0;
             p.isLanded = true;
           }
         }
       }
     });
 
-    // 2. Carrier Bird AI & Stunt Choreography
+    // 2. Carrier Bird AI & Procedural Dynamic Stunt Choreography
     if (this.isBirdActive) {
       this.bird.wingPhase += 0.28;
       const target = this.bird.targetPaper;
@@ -375,29 +405,81 @@ export class PaperGame {
           if (this.soundEngine) this.soundEngine.playTick(1.8);
         }
       } else if (this.bird.state === 'greeting') {
-        // Hover, wink eye, and show greeting speech bubble for 1.6s
+        // Hover, wink eye, and show greeting speech bubble for 1.4s
         this.bird.y = 140 + Math.sin(Date.now() * 0.005) * 4;
-        if (Date.now() - this.bird.stuntTimer > 1600) {
+        if (Date.now() - this.bird.stuntTimer > 1400) {
           this.bird.state = 'stunting';
           this.bird.isWinking = false;
-          this.bird.speechText = "Watch my Stunts! 🌀🚀";
+          this.bird.speechText = this.bird.stuntQuote || "Watch my Stunts! 🌀🚀";
           this.bird.stuntTimer = Date.now();
           this.bird.stuntPhase = 0;
         }
       } else if (this.bird.state === 'stunting') {
-        // Perform 360° Loop-de-loop flight stunt!
-        this.bird.stuntPhase += 0.09;
-        const stuntRadius = 40;
+        // Procedural Dynamic Stunt Choreography (5 Stunt Modes!)
+        const stuntType = this.bird.stuntType || 0;
         const centerX = this.width / 2;
         const centerY = 150;
 
-        this.bird.x = centerX + Math.cos(this.bird.stuntPhase) * stuntRadius;
-        this.bird.y = centerY + Math.sin(this.bird.stuntPhase) * stuntRadius;
-        this.bird.angle = this.bird.stuntPhase + Math.PI / 2;
+        if (stuntType === 0) {
+          // 🌀 Barrel Roll 360° Loop-de-loop
+          this.bird.stuntPhase += 0.09;
+          const stuntRadius = 45;
+          this.bird.x = centerX + Math.cos(this.bird.stuntPhase) * stuntRadius;
+          this.bird.y = centerY + Math.sin(this.bird.stuntPhase) * stuntRadius;
+          this.bird.angle = this.bird.stuntPhase + Math.PI / 2;
 
-        if (this.bird.stuntPhase >= Math.PI * 2) {
-          this.bird.state = 'swooping';
-          this.bird.angle = 0;
+          if (this.bird.stuntPhase >= Math.PI * 2) {
+            this.bird.state = 'swooping';
+            this.bird.angle = 0;
+          }
+        } else if (stuntType === 1) {
+          // ⚡ Lightning Slalom Dash
+          this.bird.stuntPhase += 0.11;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 3) * 130;
+          this.bird.y = 130 + Math.cos(this.bird.stuntPhase) * 25;
+          this.bird.angle = Math.cos(this.bird.stuntPhase * 3) * 0.4;
+
+          if (this.bird.stuntPhase >= Math.PI * 2) {
+            this.bird.state = 'swooping';
+            this.bird.angle = 0;
+          }
+        } else if (stuntType === 2) {
+          // 🌪️ Tornado Spiral Whirl
+          this.bird.stuntPhase += 0.10;
+          const currentRadius = Math.max(10, 75 - this.bird.stuntPhase * 9);
+          this.bird.x = centerX + Math.cos(this.bird.stuntPhase * 1.5) * currentRadius;
+          this.bird.y = centerY + Math.sin(this.bird.stuntPhase * 1.5) * currentRadius;
+          this.bird.angle = this.bird.stuntPhase * 1.5 + Math.PI / 2;
+
+          if (this.bird.stuntPhase >= Math.PI * 2.2) {
+            this.bird.state = 'swooping';
+            this.bird.angle = 0;
+          }
+        } else if (stuntType === 3) {
+          // 🎢 Rollercoaster Wave Dive
+          this.bird.stuntPhase += 0.08;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 2) * 110;
+          this.bird.y = 140 + Math.sin(this.bird.stuntPhase * 4) * 55;
+          this.bird.angle = Math.cos(this.bird.stuntPhase * 4) * 0.45;
+
+          if (this.bird.stuntPhase >= Math.PI * 2) {
+            this.bird.state = 'swooping';
+            this.bird.angle = 0;
+          }
+        } else {
+          // 🤸 Double Flip Somersault
+          this.bird.stuntPhase += 0.13;
+          this.bird.angle = this.bird.stuntPhase * 2;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase) * 25;
+          this.bird.y = 140 - Math.sin(this.bird.stuntPhase * 2) * 40;
+
+          if (this.bird.stuntPhase >= Math.PI * 2) {
+            this.bird.state = 'swooping';
+            this.bird.angle = 0;
+          }
+        }
+
+        if (this.bird.state === 'swooping') {
           this.bird.speechText = "Target Locked! 🎯";
           this.winnerBadge.textContent = '🎯 Carrier Bird swooping to grab the winner!';
         }
@@ -592,18 +674,33 @@ export class PaperGame {
     ctx.stroke();
     ctx.restore();
 
-    // 2. Draw Paper Slips
+    // 2. Draw Paper Slips (with drop shadows and 3D scale)
     this.paperSlips.forEach((p) => {
+      const scale = p.scale || 1.0;
+
+      // Draw paper shadow on ground when in flight
+      if (!p.isLanded && !p.isPicked) {
+        ctx.save();
+        ctx.translate(p.x + 8, this.height - 50);
+        ctx.rotate(p.angle * 0.3);
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+        ctx.beginPath();
+        ctx.ellipse(0, 0, (p.width * scale * 0.45), 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.angle);
+      ctx.scale(scale, scale);
 
       // Glow / Shadow
-      ctx.shadowColor = p.isPicked ? '#FFE600' : 'rgba(0, 0, 0, 0.5)';
-      ctx.shadowBlur = p.isPicked ? 30 : 10;
+      ctx.shadowColor = p.isPicked ? '#FFE600' : 'rgba(0, 0, 0, 0.4)';
+      ctx.shadowBlur = p.isPicked ? 30 : 12;
 
-      const pw = p.isPicked ? p.width * 1.4 : p.width;
-      const ph = p.isPicked ? p.height * 1.4 : p.height;
+      const pw = p.isPicked ? p.width * 1.35 : p.width;
+      const ph = p.isPicked ? p.height * 1.35 : p.height;
 
       // Paper card body
       ctx.fillStyle = p.color;
@@ -611,8 +708,17 @@ export class PaperGame {
       ctx.roundRect(-pw / 2, -ph / 2, pw, ph, 8);
       ctx.fill();
 
+      // Folded corner crease graphic on top right of paper slip
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+      ctx.beginPath();
+      ctx.moveTo(pw / 2 - 14, -ph / 2);
+      ctx.lineTo(pw / 2, -ph / 2 + 14);
+      ctx.lineTo(pw / 2 - 14, -ph / 2 + 14);
+      ctx.closePath();
+      ctx.fill();
+
       // Border
-      ctx.strokeStyle = p.isPicked ? '#FFFFFF' : 'rgba(255, 255, 255, 0.5)';
+      ctx.strokeStyle = p.isPicked ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)';
       ctx.lineWidth = p.isPicked ? 3.5 : 1.5;
       ctx.stroke();
 
@@ -620,7 +726,7 @@ export class PaperGame {
       ctx.fillStyle = '#FFFFFF';
       ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
       ctx.shadowBlur = 4;
-      const fontSize = p.isPicked ? 23 : 16;
+      const fontSize = p.isPicked ? 22 : 16;
       ctx.font = `bold ${fontSize}px system-ui, -apple-system, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';

@@ -48,6 +48,7 @@ class App {
     this.initParticleEngine();
     this.initPaperGame();
     this.initMusicalChairsGame();
+    this.syncPlayerListToGames();
     this.setupEventListeners();
     this.setupArcadeLauncher();
     this.renderWheels();
@@ -55,6 +56,17 @@ class App {
     this.updateTabsVisibility();
     this.renderHistoryList();
     this.activateTVSetup();
+  }
+
+  syncPlayerListToGames() {
+    const players = this.wheelConfigs[0]?.options;
+    if (!Array.isArray(players) || players.length === 0) return;
+    if (this.paperGame) {
+      this.paperGame.setOptions(players);
+    }
+    if (this.chairsGame) {
+      this.chairsGame.setOptions(players);
+    }
   }
 
   initPaperGame() {
@@ -108,6 +120,7 @@ class App {
         paperView.style.display = 'block';
         chairsView.style.display = 'none';
 
+        this.syncPlayerListToGames();
         if (this.chairsGame) this.chairsGame.pause();
         if (this.paperGame) this.paperGame.resize();
 
@@ -124,6 +137,7 @@ class App {
         paperView.style.display = 'none';
         chairsView.style.display = 'block';
 
+        this.syncPlayerListToGames();
         if (this.paperGame) this.paperGame.pause();
         if (this.chairsGame) this.chairsGame.resize();
 
@@ -669,6 +683,10 @@ class App {
     this.optionsInput.value = options.join('\n');
 
     this.wheelConfigs[this.activeTab] = { title, options };
+
+    if (this.activeTab === 0) {
+      this.syncPlayerListToGames();
+    }
 
     if (this.wheels[this.activeTab]) {
       this.wheels[this.activeTab].title = title;

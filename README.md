@@ -88,9 +88,11 @@ npm run build
   - **YouTube Music Player & Built-in Synth Support**: Added dual audio source toggle allowing players to stream any YouTube video/song link (e.g. *Frozen Let It Go*, *Baby Shark*, *Party Mix*) or use the built-in procedural Web Audio synth. When music stops, YouTube video pauses instantly in sync with referee whistle!
 
 ### v5.0 – "Web Games Enhancement & Speech Announcer" Update 🎤🎮
+- **Unified Global Player List**: Wheel 1's player list (`Gaurav`, `Madhu`, `Papa`, `Mama`, etc.) now automatically syncs across **all three games** (**SpinVerse Wheels**, **Sky Bird Paper Picker**, and **Musical Chairs & Freeze Dance**)! Editing or saving player names in Wheel 1 automatically updates the player list in all arcade games.
+- **3D Aerodynamic Flying Paper Physics**: Realistic leaf-flutter physics with 3D depth roll angles, wind vortex lift forces, aerodynamic tilt gliding, and ground drop shadows.
+- **5 Procedural Dynamic Bird Stunts**: The carrier bird now randomly executes one of 5 distinct stunt choreographies every spin (**Barrel Roll**, **Lightning Slalom Dash**, **Tornado Spiral Whirl**, **Rollercoaster Wave Dive**, **Double Flip Somersault**) with custom speech quotes (*"Watch my Barrel Roll! 🌀"*, *"Lightning Slalom! ⚡"*).
 - **Web Speech Synthesis (Text-to-Speech Announcer)**: Added native `window.speechSynthesis` voice announcer engine with header toggle (`🗣️ Voice: ON/OFF`). Automatically speaks winning slice results, carrier bird picks, and musical chairs eliminations out loud in an energetic pitch!
 - **Wheel Theme Selector**: Choose between **Neon Cyber**, **Rainbow Carnival**, **Golden Luxury**, and **Pastel Dream** slice color schemes dynamically.
-- **Enhanced Carrier Bird Paper Reveal**: Integrated Text-to-Speech winner announcements upon carrier bird paper drop.
 - **Musical Chairs Stage & Announcer**: Added TTS voice warnings on player freeze/elimination (*"Freeze! Namith was left standing!"*) and champion crowning (*"Gaurav is the Musical Chairs Champion!"*).
 
 ### v4.0 – "SpinVerse Party Games Arcade" Update 🎮
