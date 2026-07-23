@@ -7,7 +7,7 @@ export class FreezeDanceGame {
     this.isPlaying = false;
     this.isPaused = false;
     this.freezeTimer = null;
-    this.currentYtId = 'k4yXQkG2s1E'; // Default Party Track
+    this.currentYtId = 'rVBHH5DwYFA'; // Default Freeze Dance Track
     this.ytPlayer = null;
     this.ytReady = false;
 
@@ -33,11 +33,12 @@ export class FreezeDanceGame {
         <div class="freeze-toolbar">
           <div class="freeze-url-box">
             <label for="freeze-yt-input">🎵 YouTube Song Link:</label>
-            <input type="text" id="freeze-yt-input" placeholder="Paste YouTube URL..." value="https://youtu.be/k4yXQkG2s1E?si=u70ArNQ7LcE9aSY0" />
+            <input type="text" id="freeze-yt-input" placeholder="Paste YouTube URL..." value="https://youtu.be/rVBHH5DwYFA?si=foprXlkd68dA3zE0" />
             <button id="freeze-load-btn" class="btn-secondary">🎵 Load Song</button>
             <select id="freeze-yt-preset" class="theme-select-input">
               <option value="">✨ Quick Presets</option>
-              <option value="k4yXQkG2s1E">🔥 Default Party Beat Track</option>
+              <option value="rVBHH5DwYFA">🔥 Default Freeze Dance Track</option>
+              <option value="k4yXQkG2s1E">🎉 Party Beat Track</option>
               <option value="2UcZWXvgMZE">🧊 Freeze Dance Song for Kids</option>
               <option value="L0MK7qz13bU">👑 Frozen — Let It Go</option>
               <option value="XqZsoesa55w">🦈 Baby Shark Freeze Beat</option>
