@@ -160,9 +160,23 @@ export class FreezeDanceGame {
       events: {
         onReady: () => {
           this.ytReady = true;
+        },
+        onStateChange: (event) => {
+          if (event && window.YT && window.YT.PlayerState && event.data === window.YT.PlayerState.ENDED) {
+            this.handleSongEnded();
+          }
         }
       }
     });
+  }
+
+  handleSongEnded() {
+    this.stopFreezeDance();
+    if (this.soundEngine) {
+      this.soundEngine.speak("Great job dancing! The song has finished!");
+    }
+    this.statusBadge.textContent = `🎉 SONG FINISHED! Great Job Dancing Everyone! 🏆`;
+    this.statusBadge.classList.remove('frozen');
   }
 
   handleActionClick() {
@@ -177,6 +191,10 @@ export class FreezeDanceGame {
     if (this.freezeTimer) {
       clearTimeout(this.freezeTimer);
       this.freezeTimer = null;
+    }
+    if (this.freezeCountdownInterval) {
+      clearInterval(this.freezeCountdownInterval);
+      this.freezeCountdownInterval = null;
     }
 
     this.isPlaying = true;
@@ -204,6 +222,16 @@ export class FreezeDanceGame {
 
   scheduleFreeze() {
     if (!this.isPlaying) return;
+
+    // Check if song has ended or is within 1s of end
+    if (this.ytPlayer && typeof this.ytPlayer.getCurrentTime === 'function' && typeof this.ytPlayer.getDuration === 'function') {
+      const currentTime = this.ytPlayer.getCurrentTime();
+      const duration = this.ytPlayer.getDuration();
+      if (duration > 0 && currentTime >= duration - 1.5) {
+        this.handleSongEnded();
+        return;
+      }
+    }
 
     if (!this.isPaused) {
       // First freeze occurs 20s after song start; subsequent freezes occur every 10s!
