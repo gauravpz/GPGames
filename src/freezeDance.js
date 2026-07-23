@@ -216,7 +216,7 @@ export class FreezeDanceGame {
   triggerFreeze() {
     this.isPaused = true;
 
-    // Pause video
+    // Pause video (frozen frame stays 100% visible on screen so kids can check pose!)
     if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
       this.ytPlayer.pauseVideo();
     }
@@ -224,16 +224,16 @@ export class FreezeDanceGame {
     // Audio SFX & Voice
     if (this.soundEngine) {
       this.soundEngine.playWhistle();
-      this.soundEngine.speak("Freeze! Don't move!");
+      this.soundEngine.speak("Freeze! Match the screen!");
     }
 
-    // Visual overlay
-    this.overlay.style.display = 'flex';
-    this.statusBadge.textContent = `🧊 FREEZE! MUSIC PAUSED! KIDS NO MOVING! 🛑`;
+    // Keep video 100% unobstructed (no text card blocking video frame)
+    if (this.overlay) this.overlay.style.display = 'none';
+    this.statusBadge.textContent = `🧊 FREEZE! (5s-7s) Match your pose with the frozen screen! 🛑`;
     this.statusBadge.classList.add('frozen');
 
-    // Freeze phase: stay paused for random 3s to 8s
-    const freezeDuration = Math.floor(Math.random() * 5000 + 3000);
+    // Freeze phase: stay paused for random 5s to 7s
+    const freezeDuration = Math.floor(Math.random() * 2000 + 5000);
     this.freezeTimer = setTimeout(() => {
       if (!this.isPlaying) return;
       this.resumeDance();
