@@ -88,10 +88,15 @@ npm run build
   - **YouTube Music Player & Built-in Synth Support**: Added dual audio source toggle allowing players to stream any YouTube video/song link (e.g. *Frozen Let It Go*, *Baby Shark*, *Party Mix*) or use the built-in procedural Web Audio synth. When music stops, YouTube video pauses instantly in sync with referee whistle!
 
 ### v5.0 – "Web Games Enhancement & Speech Announcer" Update 🎤🎮
-- **Unified Global Player List**: Wheel 1's player list (`Gaurav`, `Madhu`, `Papa`, `Mama`, etc.) now automatically syncs across **all three games** (**SpinVerse Wheels**, **Sky Bird Paper Picker**, and **Musical Chairs & Freeze Dance**)! Editing or saving player names in Wheel 1 automatically updates the player list in all arcade games.
+- **Hilarious Comedy Carrier Bird Routines**: The bird now performs hilarious procedural comedy routines before swooping down:
+  - **Loud Sneeze (`loud_sneeze`)**: Gasps (*"Aaaah..."*) and sneezes loudly (*"ACHOOO!! 🤧💥"*), playing a comical sneeze sound FX and blowing all papers swirling across the stage!
+  - **Poo Drop (`poo_drop`)**: Tail wiggle with a funny plop sound (*"Oops! Nature calls! 💩"*), dropping a falling poop emoji particle to the floor!
+  - **Fruit Tree Snack (`tree_fruit_snack`)**: Flies over to the mini Fruit Tree, pecks cherries (*"Munch munch! 🍒😋"*), and wipes her beak!
+  - **Party Shimmy & Somersault**: Disco sunglasses shimmy (*"Party Shimmy! 🕶️💃"*) and triple flip somersaults (*"Crazy Somersault! 🤸⚡"*).
+- **Animated Stand Fan & Fruit Tree**: Added a 2D metallic Stand Fan with spinning blades, oscillating head, and wind stream trails, plus a mini Fruit Tree with apples/cherries on stage.
+- **Unified Global Player List**: Wheel 1's player list (`Gaurav`, `Madhu`, `Papa`, `Mama`, etc.) now automatically syncs across **all three games** (**SpinVerse Wheels**, **Sky Bird Paper Picker**, and **Musical Chairs & Freeze Dance**)!
 - **3D Aerodynamic Flying Paper Physics**: Realistic leaf-flutter physics with 3D depth roll angles, wind vortex lift forces, aerodynamic tilt gliding, and ground drop shadows.
-- **5 Procedural Dynamic Bird Stunts**: The carrier bird now randomly executes one of 5 distinct stunt choreographies every spin (**Barrel Roll**, **Lightning Slalom Dash**, **Tornado Spiral Whirl**, **Rollercoaster Wave Dive**, **Double Flip Somersault**) with custom speech quotes (*"Watch my Barrel Roll! 🌀"*, *"Lightning Slalom! ⚡"*).
-- **Web Speech Synthesis (Text-to-Speech Announcer)**: Added native `window.speechSynthesis` voice announcer engine with header toggle (`🗣️ Voice: ON/OFF`). Automatically speaks winning slice results, carrier bird picks, and musical chairs eliminations out loud in an energetic pitch!
+- **Web Speech Synthesis (Text-to-Speech Announcer)**: Added native `window.speechSynthesis` voice announcer engine with header toggle (`🗣️ Voice: ON/OFF`). Automatically speaks winning slice results, carrier bird picks, sneeze reactions, and musical chairs eliminations out loud!
 - **Wheel Theme Selector**: Choose between **Neon Cyber**, **Rainbow Carnival**, **Golden Luxury**, and **Pastel Dream** slice color schemes dynamically.
 - **Musical Chairs Stage & Announcer**: Added TTS voice warnings on player freeze/elimination (*"Freeze! Namith was left standing!"*) and champion crowning (*"Gaurav is the Musical Chairs Champion!"*).
 

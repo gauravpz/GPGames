@@ -265,6 +265,82 @@ class SoundEngine {
     }
   }
 
+  // Loud Cartoon Sneeze (Achoo!)
+  playSneeze() {
+    if (this.sfxMuted) return;
+    this.ensureContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      // 1. Gasp phase ("Aaaaah...")
+      const gasp = this.ctx.createOscillator();
+      const gaspGain = this.ctx.createGain();
+      gasp.type = 'triangle';
+      gasp.frequency.setValueAtTime(300, now);
+      gasp.frequency.linearRampToValueAtTime(750, now + 0.35);
+      gaspGain.gain.setValueAtTime(0.2, now);
+      gaspGain.gain.linearRampToValueAtTime(0.4, now + 0.35);
+      gasp.connect(gaspGain);
+      gaspGain.connect(this.sfxGain);
+      gasp.start(now);
+      gasp.stop(now + 0.36);
+
+      // 2. Explosive Sneeze Blast ("ACHOOO!!")
+      setTimeout(() => {
+        if (!this.ctx) return;
+        const blastTime = this.ctx.currentTime;
+        const blastOsc = this.ctx.createOscillator();
+        const blastGain = this.ctx.createGain();
+        blastOsc.type = 'sawtooth';
+        blastOsc.frequency.setValueAtTime(900, blastTime);
+        blastOsc.frequency.exponentialRampToValueAtTime(150, blastTime + 0.3);
+
+        blastGain.gain.setValueAtTime(0.6, blastTime);
+        blastGain.gain.exponentialRampToValueAtTime(0.001, blastTime + 0.32);
+
+        blastOsc.connect(blastGain);
+        blastGain.connect(this.sfxGain);
+        blastOsc.start(blastTime);
+        blastOsc.stop(blastTime + 0.33);
+      }, 370);
+    } catch(e) {
+      console.warn("Sneeze sound error", e);
+    }
+  }
+
+  // Comical Poo Plop sound
+  playPooSound() {
+    if (this.sfxMuted) return;
+    this.ensureContext();
+    if (!this.ctx) return;
+
+    try {
+      const now = this.ctx.currentTime;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(220, now);
+      osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
+      gain.gain.setValueAtTime(0.5, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+      osc.connect(gain);
+      gain.connect(this.sfxGain);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    } catch(e) {
+      console.warn("Poo sound error", e);
+    }
+  }
+
+  // Cartoon Fruit Munching
+  playMunch() {
+    if (this.sfxMuted) return;
+    this.playPop(1.8);
+    setTimeout(() => this.playPop(2.3), 80);
+    setTimeout(() => this.playPop(1.6), 160);
+  }
+
   // Cartoon Slide Whistle Drop
   playSlideWhistle() {
     if (this.sfxMuted) return;

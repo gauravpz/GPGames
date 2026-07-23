@@ -198,6 +198,10 @@ export class PaperGame {
       isLanded: true
     }));
 
+    this.fanBladeAngle = 0;
+    this.fanOscillation = 0;
+    this.poopItems = [];
+
     this.bird = {
       x: -120,
       y: 130,
@@ -212,6 +216,7 @@ export class PaperGame {
       stuntPhase: 0,
       stuntType: 0,
       stuntQuote: '',
+      hasTriggeredSound: false,
       targetPaper: null
     };
 
@@ -225,7 +230,7 @@ export class PaperGame {
     this.windActive = true;
     this.fanBtn.classList.add('active', 'spinning');
     this.fanBtn.disabled = true;
-    this.winnerBadge.textContent = '🌀 Swirling wind vortex blowing papers into the sky...';
+    this.winnerBadge.textContent = '🌀 Stand Fan blowing papers into the sky...';
 
     if (this.soundEngine) {
       this.soundEngine.playTick(1.2);
@@ -269,16 +274,17 @@ export class PaperGame {
     this.bird.targetPaper = this.paperSlips[this.chosenIndex];
     this.winnerBadge.textContent = '🕊️ Look! Carrier Bird is flying in!';
 
-    // Randomize Stunt type each time so stunts are different every spin!
+    // Randomize Hilarious Comedy Stunt Routine!
     this.bird.stuntType = Math.floor(Math.random() * 5);
     const stuntQuotes = [
-      "Watch my Barrel Roll! 🌀🚀",
-      "Lightning Slalom Dash! ⚡🦅",
-      "Tornado Spiral Whirl! 🌪️✨",
-      "Rollercoaster Wave Dive! 🎢💥",
-      "Double Flip Somersault! 🤸🔥"
+      "Aaaah... AAACHOOO!! 🤧💥",
+      "Oops! Nature calls! 💩 Woopsie!",
+      "Mmm, delicious cherry snack! 🍒😋",
+      "Party Disco Shimmy! 🕶️💃",
+      "Crazy Somersault Flip! 🤸⚡"
     ];
     this.bird.stuntQuote = stuntQuotes[this.bird.stuntType];
+    this.bird.hasTriggeredSound = false;
 
     if (this.soundEngine) {
       this.soundEngine.playTick(1.6);
@@ -415,63 +421,124 @@ export class PaperGame {
           this.bird.stuntPhase = 0;
         }
       } else if (this.bird.state === 'stunting') {
-        // Procedural Dynamic Stunt Choreography (5 Stunt Modes!)
+        // Procedural Comedy Stunt Routines (5 Stunt Modes!)
         const stuntType = this.bird.stuntType || 0;
         const centerX = this.width / 2;
         const centerY = 150;
 
         if (stuntType === 0) {
-          // 🌀 Barrel Roll 360° Loop-de-loop
-          this.bird.stuntPhase += 0.09;
-          const stuntRadius = 45;
-          this.bird.x = centerX + Math.cos(this.bird.stuntPhase) * stuntRadius;
-          this.bird.y = centerY + Math.sin(this.bird.stuntPhase) * stuntRadius;
-          this.bird.angle = this.bird.stuntPhase + Math.PI / 2;
+          // 🤧 Loud Sneeze Routine! ("Aaaaah... ACHOOO!!")
+          this.bird.stuntPhase += 0.06;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 2) * 15;
+          this.bird.y = 140 - Math.sin(this.bird.stuntPhase * 4) * 8;
 
-          if (this.bird.stuntPhase >= Math.PI * 2) {
+          if (this.bird.stuntPhase < 1.2) {
+            this.bird.speechText = "Aaaah... Aaaaahh... 🤧";
+          } else {
+            this.bird.speechText = "ACHOOO!! 🤧💥";
+            if (!this.bird.hasTriggeredSound) {
+              this.bird.hasTriggeredSound = true;
+              if (this.soundEngine) {
+                this.soundEngine.playSneeze();
+                this.soundEngine.speak("Achoo!");
+              }
+              // Sneeze shockwave pushes papers swirling away!
+              this.paperSlips.forEach(p => {
+                p.vx += (Math.random() - 0.5) * 24;
+                p.vy -= Math.random() * 12 + 6;
+              });
+            }
+          }
+
+          if (this.bird.stuntPhase >= 2.4) {
             this.bird.state = 'swooping';
             this.bird.angle = 0;
           }
         } else if (stuntType === 1) {
-          // ⚡ Lightning Slalom Dash
-          this.bird.stuntPhase += 0.11;
-          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 3) * 130;
-          this.bird.y = 130 + Math.cos(this.bird.stuntPhase) * 25;
-          this.bird.angle = Math.cos(this.bird.stuntPhase * 3) * 0.4;
+          // 💩 Poo Drop Routine! ("Oops! Nature calls! 💩")
+          this.bird.stuntPhase += 0.07;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 3) * 12;
+          this.bird.y = 135 + Math.cos(this.bird.stuntPhase * 5) * 6;
+          this.bird.speechText = "Oops! Nature calls! 💩";
 
-          if (this.bird.stuntPhase >= Math.PI * 2) {
+          if (this.bird.stuntPhase >= 1.0 && !this.bird.hasTriggeredSound) {
+            this.bird.hasTriggeredSound = true;
+            this.poopItems.push({
+              x: this.bird.x - 5,
+              y: this.bird.y + 12,
+              vy: 2.2,
+              vx: (Math.random() - 0.5) * 1.5,
+              isLanded: false
+            });
+            if (this.soundEngine) {
+              this.soundEngine.playPooSound();
+              this.soundEngine.speak("Oops! Nature calls!");
+            }
+          }
+
+          if (this.bird.stuntPhase >= 2.3) {
             this.bird.state = 'swooping';
             this.bird.angle = 0;
           }
         } else if (stuntType === 2) {
-          // 🌪️ Tornado Spiral Whirl
-          this.bird.stuntPhase += 0.10;
-          const currentRadius = Math.max(10, 75 - this.bird.stuntPhase * 9);
-          this.bird.x = centerX + Math.cos(this.bird.stuntPhase * 1.5) * currentRadius;
-          this.bird.y = centerY + Math.sin(this.bird.stuntPhase * 1.5) * currentRadius;
-          this.bird.angle = this.bird.stuntPhase * 1.5 + Math.PI / 2;
+          // 🍒 Eating Fruits from Tree Routine! ("Mmm, delicious cherry! 🍒")
+          this.bird.stuntPhase += 0.07;
+          const treeX = this.width - 80;
+          const treeY = 130;
 
-          if (this.bird.stuntPhase >= Math.PI * 2.2) {
+          if (this.bird.stuntPhase < 1.0) {
+            // Fly over to fruit tree
+            this.bird.x += (treeX - this.bird.x) * 0.12;
+            this.bird.y += (treeY - this.bird.y) * 0.12;
+            this.bird.speechText = "Ooh, Fruit Tree! 🍒";
+          } else {
+            // Peck 3 times munching cherries
+            this.bird.x = treeX + Math.sin(this.bird.stuntPhase * 12) * 5;
+            this.bird.y = treeY + Math.cos(this.bird.stuntPhase * 12) * 5;
+            this.bird.speechText = "Munch munch! 🍒😋";
+
+            if (!this.bird.hasTriggeredSound) {
+              this.bird.hasTriggeredSound = true;
+              if (this.soundEngine) {
+                this.soundEngine.playMunch();
+                this.soundEngine.speak("Mmm! Delicious cherry!");
+              }
+            }
+          }
+
+          if (this.bird.stuntPhase >= 2.4) {
             this.bird.state = 'swooping';
             this.bird.angle = 0;
           }
         } else if (stuntType === 3) {
-          // 🎢 Rollercoaster Wave Dive
+          // 🕶️ Disco Shimmy Routine! ("Party Shimmy! 🕶️💃")
           this.bird.stuntPhase += 0.08;
-          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 2) * 110;
-          this.bird.y = 140 + Math.sin(this.bird.stuntPhase * 4) * 55;
-          this.bird.angle = Math.cos(this.bird.stuntPhase * 4) * 0.45;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase * 6) * 35;
+          this.bird.y = 140 + Math.cos(this.bird.stuntPhase * 6) * 10;
+          this.bird.angle = Math.sin(this.bird.stuntPhase * 6) * 0.35;
+          this.bird.speechText = "Party Shimmy! 🕶️💃";
 
-          if (this.bird.stuntPhase >= Math.PI * 2) {
+          if (!this.bird.hasTriggeredSound) {
+            this.bird.hasTriggeredSound = true;
+            if (this.soundEngine) this.soundEngine.playBoing();
+          }
+
+          if (this.bird.stuntPhase >= 2.4) {
             this.bird.state = 'swooping';
             this.bird.angle = 0;
           }
         } else {
-          // 🤸 Double Flip Somersault
-          this.bird.stuntPhase += 0.13;
-          this.bird.angle = this.bird.stuntPhase * 2;
-          this.bird.x = centerX + Math.sin(this.bird.stuntPhase) * 25;
-          this.bird.y = 140 - Math.sin(this.bird.stuntPhase * 2) * 40;
+          // 🤸 Crazy Somersault Flip Routine!
+          this.bird.stuntPhase += 0.12;
+          this.bird.angle = this.bird.stuntPhase * 2.5;
+          this.bird.x = centerX + Math.sin(this.bird.stuntPhase) * 40;
+          this.bird.y = 140 - Math.sin(this.bird.stuntPhase * 2) * 45;
+          this.bird.speechText = "Crazy Somersault! 🤸⚡";
+
+          if (!this.bird.hasTriggeredSound) {
+            this.bird.hasTriggeredSound = true;
+            if (this.soundEngine) this.soundEngine.playQuack();
+          }
 
           if (this.bird.stuntPhase >= Math.PI * 2) {
             this.bird.state = 'swooping';
@@ -735,13 +802,164 @@ export class PaperGame {
       ctx.restore();
     });
 
-    // 3. Draw Carrier Bird & Speech Bubble
+    // 3. Draw Stand Fan at Base Left
+    this.drawStandFan(65, this.height - 105);
+
+    // 4. Draw Fruit Tree at Base Right
+    this.drawFruitTree(this.width - 65, this.height - 110);
+
+    // 5. Draw Poop Emoji Items
+    this.drawPoopItems();
+
+    // 6. Draw Carrier Bird & Speech Bubble
     if (this.isBirdActive) {
       this.drawBird(this.bird.x, this.bird.y, this.bird.wingPhase, this.bird.angle, this.bird.isWinking);
       if (this.bird.speechText) {
         this.drawSpeechBubble(this.bird.x, this.bird.y - 32, this.bird.speechText);
       }
     }
+  }
+
+  drawStandFan(x, y) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(x, y);
+
+    if (this.windActive) {
+      this.fanBladeAngle += 0.45;
+      this.fanOscillation = Math.sin(Date.now() * 0.003) * 0.25;
+    } else {
+      this.fanOscillation = 0;
+    }
+
+    // Base Stand
+    ctx.fillStyle = '#1e293b';
+    ctx.strokeStyle = '#00F0FF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, 50, 24, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Metallic Neck Pole
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(-3, 0, 6, 50);
+
+    // Oscillating Fan Head
+    ctx.save();
+    ctx.rotate(this.fanOscillation);
+
+    // Motor Housing
+    ctx.fillStyle = '#00F0FF';
+    ctx.shadowColor = '#00F0FF';
+    ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(0, 0, 12, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Fan Outer Cage Ring
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(0, 0, 32, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Cage Grids
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+    for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(a) * 32, Math.sin(a) * 32);
+      ctx.stroke();
+    }
+
+    // 3 Spinning Colorful Fan Blades
+    ctx.save();
+    ctx.rotate(this.fanBladeAngle);
+    ctx.fillStyle = '#FF2E93';
+    for (let b = 0; b < 3; b++) {
+      ctx.save();
+      ctx.rotate((b * Math.PI * 2) / 3);
+      ctx.beginPath();
+      ctx.ellipse(14, 0, 14, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+
+    ctx.restore(); // end fan head rotate
+
+    // Wind Stream Gust Lines when active
+    if (this.windActive) {
+      ctx.strokeStyle = 'rgba(0, 240, 255, 0.5)';
+      ctx.lineWidth = 2;
+      for (let g = 0; g < 4; g++) {
+        const offset = (Date.now() * 0.2 + g * 80) % 180;
+        ctx.beginPath();
+        ctx.moveTo(15 + offset, -15 + g * 10);
+        ctx.lineTo(45 + offset, -15 + g * 10);
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  drawFruitTree(x, y) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.translate(x, y);
+
+    // Brown Trunk
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.roundRect(-8, 0, 16, 60, 4);
+    ctx.fill();
+
+    // Leafy Green Crown
+    ctx.fillStyle = '#22c55e';
+    ctx.shadowColor = '#15803d';
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(0, -25, 34, 0, Math.PI * 2);
+    ctx.arc(-20, -15, 24, 0, Math.PI * 2);
+    ctx.arc(20, -15, 24, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Red Cherries / Apples on Tree
+    ctx.font = '16px system-ui';
+    ctx.textAlign = 'center';
+    ctx.fillText('🍒', -14, -25);
+    ctx.fillText('🍎', 12, -30);
+    ctx.fillText('🍒', -6, -10);
+    ctx.fillText('🍎', 18, -12);
+
+    ctx.restore();
+  }
+
+  drawPoopItems() {
+    const ctx = this.ctx;
+    const floorY = this.height - 55;
+
+    this.poopItems.forEach(item => {
+      if (!item.isLanded) {
+        item.y += item.vy;
+        item.x += item.vx;
+        if (item.y >= floorY + 10) {
+          item.y = floorY + 10;
+          item.isLanded = true;
+        }
+      }
+
+      ctx.save();
+      ctx.translate(item.x, item.y);
+      ctx.font = '22px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('💩', 0, 0);
+      ctx.restore();
+    });
   }
 
   drawBird(x, y, wingPhase, angle, isWinking) {
