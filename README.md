@@ -87,7 +87,7 @@ npm run build
   - **Musical Chairs & Freeze Dance Game Mode (`musicalChairs.js`)**: Integrated complete party game with 2D dancing avatars circle, chair ring arrangement, random timer music stop, sharp referee whistle SFX, and automated standing player elimination.
   - **YouTube Music Player & Built-in Synth Support**: Added dual audio source toggle allowing players to stream any YouTube video/song link (e.g. *Frozen Let It Go*, *Baby Shark*, *Party Mix*) or use the built-in procedural Web Audio synth. When music stops, YouTube video pauses instantly in sync with referee whistle!
 
-### v5.0 – "Web Games Enhancement & Speech Announcer" Update 🎤🎮
+- **YouTube Link Music Embed in Musical Chairs**: Players can now paste any custom YouTube video link or select quick party presets (*Frozen*, *Baby Shark*, *Party Rock Anthem*, *Gummy Bear*). The embedded video streams in a floating mini stage window and automatically **pauses/plays in 0ms sync** with referee freeze whistles!
 - **Hilarious Comedy Carrier Bird Routines**: The bird now performs hilarious procedural comedy routines before swooping down:
   - **Loud Sneeze (`loud_sneeze`)**: Gasps (*"Aaaah..."*) and sneezes loudly (*"ACHOOO!! 🤧💥"*), playing a comical sneeze sound FX and blowing all papers swirling across the stage!
   - **Poo Drop (`poo_drop`)**: Tail wiggle with a funny plop sound (*"Oops! Nature calls! 💩"*), dropping a falling poop emoji particle to the floor!

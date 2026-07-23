@@ -1,4 +1,4 @@
-// Musical Chairs & Freeze Dance Game Mode — 100% Reliable Party Audio Engine
+// Musical Chairs & Freeze Dance Game Mode — 100% Reliable Party Audio Engine & YouTube Music Embed
 
 export class MusicalChairsGame {
   constructor(containerElement, soundEngine, particleEngine) {
@@ -16,6 +16,11 @@ export class MusicalChairsGame {
     this.musicTimer = null;
     this.danceAngle = 0;
     this.animFrameId = null;
+
+    this.musicSource = 'synth'; // 'synth' or 'youtube'
+    this.currentYtId = 'L0MK7qz13bU'; // Default: Frozen Let It Go
+    this.ytPlayer = null;
+    this.ytReady = false;
 
     this.initDOM();
     this.initCanvas();
@@ -36,9 +41,35 @@ export class MusicalChairsGame {
           </div>
         </div>
 
+        <!-- Music Source Selector Bar -->
+        <div class="music-source-bar">
+          <div class="music-source-toggles">
+            <span class="source-label">🎵 Music Source:</span>
+            <button id="src-synth-btn" class="music-source-btn active">🎹 Built-in Synth BGM</button>
+            <button id="src-yt-btn" class="music-source-btn">▶️ YouTube Song Link</button>
+          </div>
+
+          <div class="yt-input-container" id="yt-input-container" style="display: none;">
+            <input type="text" id="chairs-yt-input" placeholder="Paste YouTube link (e.g. https://www.youtube.com/watch?v=L0MK7qz13bU)..." value="https://www.youtube.com/watch?v=L0MK7qz13bU" />
+            <button id="chairs-load-yt-btn" class="btn-secondary">🎵 Load Song</button>
+            <select id="chairs-yt-preset" class="theme-select-input">
+              <option value="">✨ Quick Presets</option>
+              <option value="L0MK7qz13bU">👑 Frozen — Let It Go</option>
+              <option value="XqZsoesa55w">🦈 Baby Shark Party Beat</option>
+              <option value="KQ6zr6kCPj8">💃 Party Rock Anthem</option>
+              <option value="astISOttWH0">🕺 Gummy Bear Song</option>
+            </select>
+          </div>
+        </div>
+
         <!-- 2D Interactive Stage -->
         <div class="chairs-stage-container" id="chairs-stage">
           <canvas id="chairs-game-canvas"></canvas>
+
+          <!-- Floating YouTube Video Window -->
+          <div id="yt-player-wrapper" class="youtube-chairs-player" style="display: none;">
+            <div id="yt-player-frame"></div>
+          </div>
 
           <!-- Big Control Button -->
           <button id="chairs-action-btn" class="chairs-main-btn">
@@ -68,6 +99,14 @@ export class MusicalChairsGame {
     this.stage = this.container.querySelector('#chairs-stage');
     this.canvas = this.container.querySelector('#chairs-game-canvas');
     this.ctx = this.canvas.getContext('2d');
+
+    this.srcSynthBtn = this.container.querySelector('#src-synth-btn');
+    this.srcYtBtn = this.container.querySelector('#src-yt-btn');
+    this.ytInputContainer = this.container.querySelector('#yt-input-container');
+    this.ytInput = this.container.querySelector('#chairs-yt-input');
+    this.loadYtBtn = this.container.querySelector('#chairs-load-yt-btn');
+    this.ytPresetSelect = this.container.querySelector('#chairs-yt-preset');
+    this.ytPlayerWrapper = this.container.querySelector('#yt-player-wrapper');
   }
 
   initCanvas() {
@@ -101,6 +140,40 @@ export class MusicalChairsGame {
       if (e.key === 'Enter') this.parseAndSaveNames();
     });
 
+    // Music Source Switcher
+    this.srcSynthBtn.addEventListener('click', () => {
+      this.musicSource = 'synth';
+      this.srcSynthBtn.classList.add('active');
+      this.srcYtBtn.classList.remove('active');
+      this.ytInputContainer.style.display = 'none';
+      this.ytPlayerWrapper.style.display = 'none';
+      if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+        this.ytPlayer.pauseVideo();
+      }
+    });
+
+    this.srcYtBtn.addEventListener('click', () => {
+      this.musicSource = 'youtube';
+      this.srcYtBtn.classList.add('active');
+      this.srcSynthBtn.classList.remove('active');
+      this.ytInputContainer.style.display = 'flex';
+      this.ytPlayerWrapper.style.display = 'block';
+      this.loadYouTubeVideo();
+    });
+
+    this.loadYtBtn.addEventListener('click', () => this.loadYouTubeVideo());
+    this.ytInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') this.loadYouTubeVideo();
+    });
+
+    this.ytPresetSelect.addEventListener('change', () => {
+      const val = this.ytPresetSelect.value;
+      if (val) {
+        this.ytInput.value = `https://www.youtube.com/watch?v=${val}`;
+        this.loadYouTubeVideo();
+      }
+    });
+
     let handled = false;
     this.actionBtn.addEventListener('pointerdown', () => {
       handled = true;
@@ -110,6 +183,65 @@ export class MusicalChairsGame {
       if (handled) { handled = false; return; }
       this.handleActionClick();
     });
+  }
+
+  extractYouTubeId(urlOrId) {
+    if (!urlOrId) return null;
+    const trimmed = urlOrId.trim();
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = trimmed.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  loadYouTubeVideo() {
+    const raw = this.ytInput.value;
+    const ytId = this.extractYouTubeId(raw);
+    if (!ytId) {
+      alert('Please enter a valid YouTube video URL or ID (e.g., https://www.youtube.com/watch?v=L0MK7qz13bU)');
+      return;
+    }
+    this.currentYtId = ytId;
+    this.initYouTubePlayer(ytId);
+  }
+
+  initYouTubePlayer(videoId) {
+    if (!videoId) return;
+    this.ytPlayerWrapper.style.display = 'block';
+
+    if (window.YT && window.YT.Player) {
+      if (this.ytPlayer && typeof this.ytPlayer.loadVideoById === 'function') {
+        this.ytPlayer.loadVideoById(videoId);
+      } else {
+        this.ytPlayer = new window.YT.Player('yt-player-frame', {
+          height: '100%',
+          width: '100%',
+          videoId: videoId,
+          playerVars: {
+            autoplay: 0,
+            controls: 1,
+            modestbranding: 1,
+            rel: 0
+          },
+          events: {
+            onReady: () => {
+              this.ytReady = true;
+            }
+          }
+        });
+      }
+    } else {
+      window.onYouTubeIframeAPIReady = () => {
+        this.initYouTubePlayer(videoId);
+      };
+      if (!document.getElementById('yt-iframe-api-script')) {
+        const tag = document.createElement('script');
+        tag.id = 'yt-iframe-api-script';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+    }
   }
 
   parseAndSaveNames() {
@@ -130,18 +262,11 @@ export class MusicalChairsGame {
   /** Set options from TV remote sync — updates players without triggering bridge back */
   setOptions(options) {
     if (!Array.isArray(options) || options.length === 0) return;
-    this.options = options.map(String);
+    this.options = options.map(opt => typeof opt === 'string' ? opt : (opt.text || String(opt)));
     if (this.inputField) this.inputField.value = this.options.join(' ');
     this._skipBridge = true;
     this.resetGame();
     this._skipBridge = false;
-  }
-
-  setOptions(options) {
-    if (!Array.isArray(options) || options.length === 0) return;
-    this.options = options.map(opt => typeof opt === 'string' ? opt : (opt.text || String(opt)));
-    if (this.inputField) this.inputField.value = this.options.join(' ');
-    this.resetGame();
   }
 
   resetGame() {
@@ -195,12 +320,25 @@ export class MusicalChairsGame {
   }
 
   playMusic() {
-    if (this.soundEngine) {
-      this.soundEngine.toggleBgm(true);
+    if (this.musicSource === 'youtube') {
+      if (this.soundEngine) this.soundEngine.stopBgm();
+      if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
+        this.ytPlayer.playVideo();
+      }
+    } else {
+      if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+        this.ytPlayer.pauseVideo();
+      }
+      if (this.soundEngine) {
+        this.soundEngine.toggleBgm(true);
+      }
     }
   }
 
   stopMusic() {
+    if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
+      this.ytPlayer.pauseVideo();
+    }
     if (this.soundEngine) {
       this.soundEngine.stopBgm();
     }

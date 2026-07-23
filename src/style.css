@@ -1665,23 +1665,32 @@ body.tv-mode .tv-floating-exit-btn {
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding: 0.5rem 0.75rem;
-  background: rgba(15, 23, 42, 0.6);
+  padding: 0.6rem 0.85rem;
+  background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--border-card);
   border-radius: var(--radius-md);
+  margin-bottom: 0.5rem;
 }
 
-.music-source-bar label {
+.music-source-toggles {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.source-label {
   font-weight: 700;
   color: var(--text-muted);
   font-size: 0.85rem;
+  margin-right: 0.25rem;
 }
 
 .music-source-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-card);
   color: #FFFFFF;
-  padding: 0.35rem 0.85rem;
+  padding: 0.4rem 0.95rem;
   border-radius: 18px;
   font-weight: 700;
   font-size: 0.82rem;
@@ -1697,32 +1706,36 @@ body.tv-mode .tv-floating-exit-btn {
 
 .yt-input-container {
   display: flex;
+  align-items: center;
   gap: 0.5rem;
   flex: 1;
-  min-width: 250px;
+  min-width: 280px;
+  flex-wrap: wrap;
 }
 
 .yt-input-container input {
   flex: 1;
+  min-width: 180px;
   background: rgba(15, 23, 42, 0.9);
-  border: 1px solid var(--border-card);
+  border: 1.5px solid var(--border-card);
   color: #FFFFFF;
-  padding: 0.35rem 0.75rem;
+  padding: 0.4rem 0.85rem;
   border-radius: var(--radius-md);
-  font-size: 0.82rem;
+  font-size: 0.85rem;
 }
 
 .youtube-chairs-player {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 140px;
-  height: 80px;
-  z-index: 20;
-  border-radius: 8px;
-  border: 1px solid var(--accent-pink);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-  display: none;
+  top: 12px;
+  right: 12px;
+  width: 180px;
+  height: 105px;
+  z-index: 25;
+  border-radius: 10px;
+  border: 2px solid var(--accent-pink);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  background: #000;
 }
 
 .chairs-stage-container {
