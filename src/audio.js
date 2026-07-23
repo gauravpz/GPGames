@@ -10,9 +10,27 @@ class SoundEngine {
     this.isBgmPlaying = false;
     this.bgmMuted = false;
     this.sfxMuted = false;
-    this.funnyMode = true; // Default funny sound mode active!
+    this.voiceMuted = false;
     this.volume = 0.5;
     this.step = 0;
+  }
+
+  toggleVoice(enable) {
+    this.voiceMuted = !enable;
+  }
+
+  speak(text) {
+    if (this.voiceMuted || !('speechSynthesis' in window)) return;
+    try {
+      window.speechSynthesis.cancel(); // cancel any active speech
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 1.05;
+      utterance.pitch = 1.1;
+      utterance.volume = 1.0;
+      window.speechSynthesis.speak(utterance);
+    } catch(e) {
+      console.warn("Speech synthesis error", e);
+    }
   }
 
   init() {
@@ -66,6 +84,25 @@ class SoundEngine {
     this.funnyMode = enable;
   }
 
+  syncAudioState(config) {
+    if (!config) return;
+    if (typeof config.sfxMuted === 'boolean') {
+      this.sfxMuted = config.sfxMuted;
+    }
+    if (typeof config.funnyMode === 'boolean') {
+      this.funnyMode = config.funnyMode;
+    }
+    if (typeof config.bgmMuted === 'boolean') {
+      this.bgmMuted = config.bgmMuted;
+      if (!this.bgmMuted) {
+        this.ensureContext();
+        this.startBgm();
+      } else {
+        this.stopBgm();
+      }
+    }
+  }
+
   // Cartoon Pop sound on slice tick
   playPop(pitchRatio = 1.0) {
     if (this.sfxMuted) return;
@@ -88,6 +125,10 @@ class SoundEngine {
       osc.connect(gain);
       gain.connect(this.sfxGain);
 
+      osc.onended = () => {
+        try { osc.disconnect(); gain.disconnect(); } catch(e){}
+      };
+
       osc.start(now);
       osc.stop(now + 0.035);
     } catch (e) {
@@ -98,11 +139,6 @@ class SoundEngine {
   // Classic Tick sound
   playTick(pitchRatio = 1.0) {
     if (this.sfxMuted) return;
-    if (this.funnyMode) {
-      this.playPop(pitchRatio);
-      return;
-    }
-
     this.ensureContext();
     if (!this.ctx) return;
 
@@ -120,6 +156,10 @@ class SoundEngine {
 
       osc.connect(gain);
       gain.connect(this.sfxGain);
+
+      osc.onended = () => {
+        try { osc.disconnect(); gain.disconnect(); } catch(e){}
+      };
 
       osc.start(now);
       osc.stop(now + 0.045);
@@ -160,6 +200,15 @@ class SoundEngine {
 
       carrier.connect(masterGain);
       masterGain.connect(this.sfxGain);
+
+      carrier.onended = () => {
+        try {
+          carrier.disconnect();
+          lfo.disconnect();
+          lfoGain.disconnect();
+          masterGain.disconnect();
+        } catch(e){}
+      };
 
       lfo.start(now);
       carrier.start(now);
@@ -335,6 +384,14 @@ class SoundEngine {
         filter.connect(bassGain);
         bassGain.connect(this.bgmGain);
 
+        bassOsc.onended = () => {
+          try {
+            bassOsc.disconnect();
+            filter.disconnect();
+            bassGain.disconnect();
+          } catch(e){}
+        };
+
         bassOsc.start(now);
         bassOsc.stop(now + 0.23);
       }
@@ -353,6 +410,13 @@ class SoundEngine {
       melOsc.connect(melGain);
       melGain.connect(this.bgmGain);
 
+      melOsc.onended = () => {
+        try {
+          melOsc.disconnect();
+          melGain.disconnect();
+        } catch(e){}
+      };
+
       melOsc.start(now);
       melOsc.stop(now + 0.17);
 
@@ -367,6 +431,50 @@ class SoundEngine {
       this.bgmInterval = null;
     }
   }
+
+  // Referee Whistle SFX for Musical Chairs
+  playWhistle() {
+    if (this.sfxMuted) return;
+    this.ensureContext();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const lfo = this.ctx.createOscillator();
+    const lfoGain = this.ctx.createGain();
+    const gain = this.ctx.createGain();
+
+    // Whistle high trill pitch
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(2800, now);
+
+    lfo.type = 'square';
+    lfo.frequency.setValueAtTime(35, now); // Trill speed
+    lfoGain.gain.setValueAtTime(120, now); // Trill depth
+
+    lfo.connect(osc.frequency);
+
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+
+    osc.connect(gain);
+    gain.connect(this.sfxGain);
+
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        lfo.disconnect();
+        lfoGain.disconnect();
+        gain.disconnect();
+      } catch(e){}
+    };
+
+    lfo.start(now);
+    osc.start(now);
+    lfo.stop(now + 0.6);
+    osc.stop(now + 0.65);
+  }
 }
 
 export const soundEngine = new SoundEngine();
+window.soundEngine = soundEngine;

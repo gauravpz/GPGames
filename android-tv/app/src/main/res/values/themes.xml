@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        Fullscreen black theme for Android TV.
+        - NoActionBar: no title bar
+        - Black background matches the web app's dark glassmorphism UI
+        - windowFullscreen: removes status bar
+    -->
+    <style name="Theme.SpinVerseTV" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+    </style>
+</resources>

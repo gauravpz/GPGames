@@ -64,8 +64,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 2rem;
-  background: rgba(7, 9, 19, 0.8);
+  padding: max(0.5rem, env(safe-area-inset-top, 0.5rem)) 1.25rem 0.5rem 1.25rem;
+  background: rgba(7, 9, 19, 0.85);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-card);
   position: sticky;
@@ -76,18 +76,19 @@ body {
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.4rem;
+  flex-shrink: 0;
 }
 
 .logo-icon {
-  font-size: 2rem;
-  filter: drop-shadow(0 0 8px var(--accent-cyan));
+  font-size: 1.3rem;
+  filter: drop-shadow(0 0 6px var(--accent-cyan));
 }
 
 .brand h1 {
-  font-size: 1.75rem;
+  font-size: 1.15rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
 .highlight {
@@ -106,30 +107,45 @@ body {
 }
 
 .icon-btn {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-card);
   color: var(--text-muted);
-  padding: 0.5rem 1rem;
+  padding: 0.6rem 1.1rem;
+  min-height: 44px;
+  min-width: 44px;
   border-radius: 30px;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: 0.5rem;
   font-weight: 600;
-  font-size: 0.875rem;
-  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  transition: transform 0.1s ease, background 0.2s ease, border-color 0.2s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.icon-btn * {
+  pointer-events: none;
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.16);
   color: var(--text-main);
+}
+
+.icon-btn:active {
+  transform: scale(0.92);
+  background: rgba(0, 240, 255, 0.25);
 }
 
 .icon-btn.active {
   border-color: var(--accent-cyan);
   color: var(--accent-cyan);
-  background: rgba(0, 240, 255, 0.1);
-  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+  background: rgba(0, 240, 255, 0.15);
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.3);
 }
 
 /* Main Layout */
@@ -293,44 +309,88 @@ input[type="range"] {
 
 /* Wheels Grid Layouts */
 .wheels-grid {
-  display: grid;
-  gap: 1.5rem;
+  display: flex;
   justify-content: center;
-  align-items: start;
-  min-height: 60vh;
+  align-items: center;
+  min-height: 65vh;
+  width: 100%;
+  position: relative;
+  overflow: visible;
 }
 
-.wheels-grid.layout-1 {
-  grid-template-columns: minmax(400px, 900px);
+.wheels-grid.layout-1 .wheel-card {
+  width: 100%;
+  max-width: 900px;
 }
 
 .wheels-grid.layout-2 {
-  grid-template-columns: repeat(2, minmax(380px, 1fr));
+  display: grid;
+  grid-template-columns: 35% calc(65% - 0.75rem);
+  gap: 0.75rem;
+  justify-content: center;
+  align-items: stretch;
+  width: 100%;
+}
+
+.wheels-grid.layout-2 .wheel-card {
+  width: 100%;
+  max-width: none;
+  margin: 0 !important;
+  opacity: 1 !important;
+  transform: none !important;
+  z-index: 1 !important;
+}
+
+.wheels-grid.layout-2 .wheel-card:first-child {
+  grid-column: 1;
+  margin-right: 0 !important;
+}
+
+.wheels-grid.layout-2 .wheel-card:last-child {
+  grid-column: 2;
+  margin-left: 0 !important;
+}
+
+.wheels-grid.layout-2 .wheel-card:hover,
+.wheels-grid.layout-2 .wheel-card:focus-within {
+  z-index: 2 !important;
+  transform: translateY(-4px) !important;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.2) !important;
 }
 
 .wheels-grid.layout-3 {
-  grid-template-columns: repeat(3, minmax(280px, 1fr));
-}
-
-.wheel-card {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 1.5rem;
-  position: relative;
-  width: 100%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.wheel-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(0, 240, 255, 0.15);
+.wheels-grid.layout-3 .wheel-card {
+  flex: 0 1 42%;
+  max-width: 480px;
+  z-index: 1;
+  margin: 0 -35px;
+  opacity: 0.90;
+  transform: scale(0.92);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, z-index 0.1s;
+}
+
+.wheels-grid.layout-3 .wheel-card:nth-child(2) {
+  z-index: 3;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.wheels-grid.layout-3 .wheel-card:hover,
+.wheels-grid.layout-3 .wheel-card:focus-within {
+  z-index: 10 !important;
+  opacity: 1 !important;
+  transform: scale(1.04) translateY(-6px) !important;
 }
 
 .wheel-title {
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   font-weight: 800;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.2rem;
   color: var(--accent-cyan);
   text-align: center;
 }
@@ -341,22 +401,23 @@ input[type="range"] {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: calc(100vh - 260px);
-  min-height: 320px;
-  max-height: 800px;
-  margin: 0.5rem 0;
+  height: calc(100vh - 180px);
+  min-height: 360px;
+  max-height: 900px;
+  margin: 0.1rem 0;
+  flex: 1;
 }
 
 .wheel-winner-badge {
-  margin-top: 1rem;
+  margin-top: 0.35rem;
   background: rgba(0, 240, 255, 0.15);
   border: 1px solid var(--accent-cyan);
   color: #fff;
-  padding: 0.4rem 1rem;
+  padding: 0.35rem 1rem;
   border-radius: 20px;
   font-weight: 600;
   font-size: 0.95rem;
-  min-height: 36px;
+  min-height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -783,8 +844,13 @@ input[type="text"]:focus, textarea:focus, select:focus {
     flex-wrap: wrap;
     justify-content: center;
   }
+  .icon-btn {
+    padding: 0.6rem 0.95rem;
+    min-height: 46px;
+    font-size: 0.85rem;
+  }
   .icon-btn .btn-text {
-    display: none;
+    display: inline-block;
   }
   .icon-btn .btn-icon {
     font-size: 1.2rem;
@@ -826,68 +892,143 @@ input[type="text"]:focus, textarea:focus, select:focus {
   }
 }
 
-/* 📺 TV Projection Mode Styling (Big Screen / Casting Optimized) */
-body.tv-mode {
-  padding: 0;
-  overflow-x: hidden;
+/* ──────────────────────────────────────────────────────────────────
+   📺  TV MODE  — Fullscreen, no scroll, big wheels
+   ────────────────────────────────────────────────────────────────── */
+
+/* Lock the entire page: no scroll whatsoever */
+body.tv-mode,
+body.tv-mode #app {
+  overflow: hidden !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
 }
 
+body.tv-mode #app {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Hide ALL control panels & buttons in TV mode — phone handles controls, TV shows WHEELS ONLY */
+body.tv-mode .control-bar,
+body.tv-mode .header-controls,
 body.tv-mode .config-panel,
-body.tv-mode .history-panel {
+body.tv-mode .history-panel,
+body.tv-mode .wheel-options-chips {
   display: none !important;
 }
 
-body.tv-mode .main-container {
-  max-width: 100vw;
-  padding: 1rem 2rem;
-  gap: 1.5rem;
-}
-
+/* Ultra-slim top navbar — just logo & title */
 body.tv-mode .navbar {
-  padding: 1rem 2.5rem;
+  padding: 0.4rem 1.5rem;
+  flex-shrink: 0;
+  justify-content: center;
+  border-bottom: 1px solid rgba(0, 240, 255, 0.15);
 }
 
 body.tv-mode .brand h1 {
-  font-size: 2.2rem;
+  font-size: 1.2rem;
+  letter-spacing: 1px;
 }
 
-body.tv-mode .control-bar {
-  padding: 1rem 2rem;
-  background: rgba(15, 23, 42, 0.85);
+/* Main container: 100% height for wheels grid */
+body.tv-mode .main-container {
+  max-width: 100vw;
+  padding: 0.5rem 1rem 0.75rem 1rem;
+  gap: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-body.tv-mode .btn-primary-large {
-  font-size: 1.4rem;
-  padding: 1rem 2.5rem;
+/* Wheels grid fills ALL remaining height (~95% of TV screen) */
+body.tv-mode #wheels-grid {
+  flex: 1;
+  overflow: visible;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 0 !important;
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100vw !important;
+  padding: 0.25rem 0.5rem !important;
 }
 
+body.tv-mode #wheels-grid.layout-2 {
+  display: grid !important;
+  grid-template-columns: 35% calc(65% - 0.75rem) !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+  align-items: stretch !important;
+}
+
+body.tv-mode #wheels-grid.layout-2 .wheel-card {
+  flex: none !important;
+  max-width: none !important;
+  margin: 0 !important;
+  z-index: 1 !important;
+  opacity: 1 !important;
+}
+
+/* Wheel cards stretch to fill 100% cell height */
 body.tv-mode .wheel-card {
-  padding: 2rem;
-  border-width: 2px;
-  border-color: rgba(0, 240, 255, 0.3);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(0, 240, 255, 0.2);
+  padding: 0.75rem 1.25rem;
+  border-width: 2.5px;
+  border-color: rgba(0, 240, 255, 0.45);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 240, 255, 0.3);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 28px;
 }
 
 body.tv-mode .wheel-title {
-  font-size: 1.8rem;
+  font-size: 2.2rem;
   font-weight: 800;
+  color: var(--accent-cyan);
+  text-shadow: 0 0 20px rgba(0, 240, 255, 0.8);
+  flex-shrink: 0;
+  margin-bottom: 0.5rem;
+  text-align: center;
+  width: 100%;
+  letter-spacing: 1px;
 }
 
+/* Canvas wrapper takes maximum space inside card */
 body.tv-mode .wheel-canvas-wrapper {
-  min-height: 520px;
+  flex: 1;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 body.tv-mode .wheel-winner-badge {
   font-size: 1.6rem;
-  padding: 0.8rem 1.8rem;
+  font-weight: 700;
+  padding: 0.75rem 2rem;
+  flex-shrink: 0;
+  margin-top: 0.5rem;
+  border-radius: 50px;
 }
 
 body.tv-mode .wheel-winner-badge.revealed {
-  font-size: 1.8rem;
-  border-width: 2px;
-  box-shadow: 0 0 30px rgba(255, 46, 147, 0.6), 0 0 50px rgba(255, 230, 0, 0.4);
+  font-size: 2.0rem;
+  font-weight: 800;
+  border-width: 3px;
+  box-shadow: 0 0 40px rgba(255, 46, 147, 0.8), 0 0 70px rgba(255, 230, 0, 0.6);
+  color: #FFFFFF;
 }
 
+/* TV Result Toast — bigger text */
 body.tv-mode .result-toast {
   top: 1.5rem;
   right: 2rem;
@@ -904,3 +1045,994 @@ body.tv-mode .toast-title {
 body.tv-mode .result-item-value {
   font-size: 1.5rem;
 }
+
+/* ──────────────────────────────────────────────────────────────────
+   📺  TV SETUP OVERLAY  — Full-screen input screen shown at launch
+   ────────────────────────────────────────────────────────────────── */
+
+.tv-setup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background:
+    radial-gradient(at 10% 10%, rgba(112, 0, 255, 0.25) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(255, 46, 147, 0.2) 0px, transparent 50%),
+    #070913;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow: hidden;
+}
+
+.tv-setup-card {
+  width: 100%;
+  max-width: 1400px;
+  height: 100%;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.tv-setup-header {
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.tv-setup-icon {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 0 12px var(--accent-cyan));
+}
+
+.tv-setup-header h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin: 0.25rem 0;
+}
+
+.tv-setup-badge {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  padding: 0.2rem 0.75rem;
+  border-radius: 20px;
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+.tv-setup-subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.tv-setup-subtitle strong {
+  color: var(--accent-cyan);
+}
+
+/* 3-column grid of wheel inputs */
+.tv-setup-wheels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.tv-setup-wheel-block {
+  background: rgba(20, 24, 45, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tv-setup-wheel-block:focus-within {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 20px rgba(0, 240, 255, 0.25);
+}
+
+.tv-setup-wheel-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tv-wheel-num {
+  font-size: 1.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 6px var(--accent-cyan));
+}
+
+.tv-wheel-title-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  color: var(--accent-cyan);
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-family);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.tv-wheel-title-input:focus {
+  outline: none;
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.tv-wheel-options-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  padding: 0.75rem;
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  resize: none;
+  line-height: 1.6;
+  min-height: 0;
+}
+
+.tv-wheel-options-input:focus {
+  outline: none;
+  border-color: var(--accent-pink);
+  box-shadow: 0 0 12px rgba(255, 46, 147, 0.3);
+}
+
+.tv-setup-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.tv-start-btn {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  color: #fff;
+  border: none;
+  padding: 1rem 3.5rem;
+  border-radius: 50px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 0 30px rgba(255, 46, 147, 0.6), 0 0 60px rgba(112, 0, 255, 0.3);
+  animation: spinPulse 2.5s ease-in-out infinite;
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+}
+
+.tv-start-btn:hover,
+.tv-start-btn:focus {
+  transform: scale(1.05);
+  box-shadow: 0 0 50px rgba(255, 46, 147, 0.85), 0 0 90px rgba(112, 0, 255, 0.5);
+  outline: none;
+}
+
+.tv-setup-hint {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   📡  CAST CONTROLLER MODE  — Phone becomes a remote control
+   Wheels are hidden on phone (they're on TV at 1080p).
+   Phone shows: Cast badge + config editor + big SPIN button.
+   ────────────────────────────────────────────────────────────────── */
+
+/* Cast status badge in navbar */
+.cast-status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 240, 255, 0.12);
+  border: 1px solid var(--accent-cyan);
+  color: var(--accent-cyan);
+  padding: 0.35rem 0.9rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.2);
+}
+
+@keyframes castPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+.cast-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  animation: castPulse 1.4s ease-in-out infinite;
+  box-shadow: 0 0 6px var(--accent-cyan);
+}
+
+/* Cast controller mode styling — wheels remain visible & interactive on phone */
+
+/* Compact navbar */
+body.cast-controller-mode .navbar {
+  padding: 0.6rem 1rem;
+}
+
+/* Main container: tighter spacing */
+body.cast-controller-mode .main-container {
+  padding: 0.75rem 1rem;
+  gap: 0.75rem;
+}
+
+/* Control bar: show only SPIN button and duration */
+body.cast-controller-mode .control-bar {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  padding: 1rem;
+}
+
+/* Giant SPIN button — this IS the remote control */
+body.cast-controller-mode .spin-action {
+  align-self: stretch;
+}
+
+body.cast-controller-mode .btn-primary-large {
+  width: 100%;
+  justify-content: center;
+  font-size: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 20px;
+}
+
+/* Cast controller label above the spin button */
+body.cast-controller-mode .control-bar::before {
+  content: '📡 Remote Control — wheels spinning on TV';
+  display: block;
+  text-align: center;
+  color: var(--accent-cyan);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+/* Config panel stays visible — users can edit wheel options live */
+body.cast-controller-mode .config-panel {
+  display: block;
+}
+
+/* History panel hidden during cast (TV shows everything) */
+body.cast-controller-mode .history-panel {
+  display: none !important;
+}
+
+/* Floating Exit TV Button — hidden by default, visible only when body.tv-mode is active */
+#tv-floating-exit-btn,
+.tv-floating-btn,
+.tv-floating-exit-btn {
+  display: none;
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 12px));
+  right: 12px;
+  z-index: 999999;
+  background: rgba(15, 23, 42, 0.9);
+  border: 2px solid #FF2E93;
+  color: #FFFFFF;
+  padding: 0.6rem 1.2rem;
+  border-radius: 30px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 0 20px rgba(255, 46, 147, 0.6);
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+  font-family: var(--font-family);
+  pointer-events: auto;
+}
+
+body.tv-mode #tv-floating-exit-btn,
+body.tv-mode .tv-floating-btn,
+body.tv-mode .tv-floating-exit-btn {
+  display: flex !important;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+#tv-floating-exit-btn:hover,
+#tv-floating-exit-btn:active,
+.tv-floating-btn:hover,
+.tv-floating-btn:active,
+.tv-floating-exit-btn:hover,
+.tv-floating-exit-btn:active {
+  background: #FF2E93;
+  border-color: #FFFFFF;
+  transform: scale(1.05);
+}
+
+/* 🎮 Game Arcade Launcher Bar */
+.game-launcher-bar {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1.25rem;
+  background: rgba(15, 23, 42, 0.6);
+  border-bottom: 1px solid var(--border-card);
+  backdrop-filter: blur(8px);
+}
+
+.arcade-tab-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-card);
+  color: var(--text-muted);
+  padding: 0.5rem 1.2rem;
+  border-radius: 25px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s ease;
+}
+
+.arcade-tab-btn:hover {
+  color: #FFFFFF;
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.arcade-tab-btn.active {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  color: #FFFFFF;
+  border-color: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 4px 15px rgba(255, 46, 147, 0.4);
+}
+
+.arcade-tab-btn.disabled-tab {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 🕊️ Sky Bird Paper Picker Game Styles */
+.game-view-section {
+  padding: 1rem 1.25rem;
+}
+
+.paper-game-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.paper-game-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.paper-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.game-badge {
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--accent-cyan);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.paper-title-group h2 {
+  font-size: 1.25rem;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.paper-input-box {
+  display: flex;
+  gap: 0.75rem;
+  z-index: 1;
+  margin-top: 0.5rem;
+}
+
+.paper-input-box input {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid var(--border-card);
+  color: #FFFFFF;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+}
+
+.paper-stage-container {
+  position: relative;
+  width: 100%;
+  height: clamp(340px, 60vh, 520px);
+  background: radial-gradient(circle at 50% 30%, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1));
+  border: 2px solid var(--accent-cyan);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 30px rgba(0, 240, 255, 0.25);
+  z-index: 10;
+}
+
+#paper-game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 12;
+  pointer-events: none;
+}
+
+/* Fan Trigger Button */
+.fan-btn {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 20;
+  background: linear-gradient(135deg, var(--accent-cyan), #00A3FF);
+  color: #0f172a;
+  border: 2px solid #FFFFFF;
+  padding: 0.75rem 1.5rem;
+  border-radius: 35px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 6px 20px rgba(0, 240, 255, 0.5);
+  transition: all 0.25s ease;
+}
+
+.fan-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 25px rgba(0, 240, 255, 0.7);
+}
+
+.fan-btn.spinning .fan-icon {
+  animation: spinFan 0.3s linear infinite;
+}
+
+@keyframes spinFan {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fan-btn.finished {
+  background: linear-gradient(135deg, var(--accent-green), #00D2FF);
+}
+
+/* Result Badge in Header (Outside Canvas Stage) */
+.paper-winner-badge-header {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.4);
+  color: var(--text-main);
+  padding: 0.4rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s ease;
+  align-self: flex-start;
+}
+
+.paper-winner-badge-header.revealed {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  color: #FFFFFF;
+  border-color: #FFFFFF;
+  font-size: 1.05rem;
+  padding: 0.6rem 1.8rem;
+  box-shadow: 0 0 30px rgba(255, 46, 147, 0.8);
+  animation: pulseWinner 1.5s infinite alternate;
+}
+
+.fan-btn-inline {
+  background: linear-gradient(135deg, var(--accent-cyan), #00A3FF);
+  color: #0f172a;
+  border: 2px solid #FFFFFF;
+  padding: 0.6rem 1.25rem;
+  border-radius: 25px;
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(0, 240, 255, 0.5);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  z-index: 50;
+  pointer-events: auto !important;
+  touch-action: manipulation;
+}
+
+.fan-btn-inline:hover, .fan-btn-inline:active {
+  transform: scale(1.06);
+  box-shadow: 0 6px 20px rgba(0, 240, 255, 0.7);
+}
+
+.fan-btn-inline.spinning .fan-icon {
+  animation: spinFan 0.3s linear infinite;
+}
+
+@keyframes spinFan {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fan-btn-inline.finished {
+  background: linear-gradient(135deg, var(--accent-green), #00D2FF);
+}
+
+@keyframes pulseWinner {
+  from { transform: translateX(-50%) scale(1); }
+  to { transform: translateX(-50%) scale(1.05); }
+}
+
+/* 🎵 Musical Chairs Game Styles */
+.musical-chairs-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.chairs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.chairs-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.chairs-title-group h2 {
+  font-size: 1.25rem;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.chairs-status-badge {
+  background: rgba(112, 0, 255, 0.2);
+  border: 1.5px solid rgba(112, 0, 255, 0.5);
+  color: #FFFFFF;
+  padding: 0.5rem 1.2rem;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.chairs-status-badge.frozen {
+  background: linear-gradient(135deg, #FF0055, #FF2E93);
+  border-color: #FFFFFF;
+  font-size: 1rem;
+  box-shadow: 0 0 25px rgba(255, 0, 85, 0.8);
+  animation: pulseFreeze 0.6s infinite alternate;
+}
+
+.chairs-status-badge.winner {
+  background: linear-gradient(135deg, #FFE600, #FF8A00);
+  color: #0f172a;
+  border-color: #FFFFFF;
+  font-size: 1.1rem;
+  box-shadow: 0 0 30px rgba(255, 230, 0, 0.8);
+}
+
+/* Music Source Selector */
+.music-source-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.75rem;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+}
+
+.music-source-bar label {
+  font-weight: 700;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.music-source-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-card);
+  color: #FFFFFF;
+  padding: 0.35rem 0.85rem;
+  border-radius: 18px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.music-source-btn.active {
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  border-color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(255, 46, 147, 0.5);
+}
+
+.yt-input-container {
+  display: flex;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 250px;
+}
+
+.yt-input-container input {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-card);
+  color: #FFFFFF;
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+}
+
+.youtube-chairs-player {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 140px;
+  height: 80px;
+  z-index: 20;
+  border-radius: 8px;
+  border: 1px solid var(--accent-pink);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+  display: none;
+}
+
+.chairs-stage-container {
+  position: relative;
+  width: 100%;
+  height: clamp(320px, 55vh, 480px);
+  background: radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 1));
+  border: 2px solid rgba(112, 0, 255, 0.6);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 0 30px rgba(112, 0, 255, 0.3);
+}
+
+#chairs-game-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.chairs-main-btn {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 25;
+  background: linear-gradient(135deg, var(--accent-pink), var(--accent-purple));
+  color: #FFFFFF;
+  border: 2px solid #FFFFFF;
+  padding: 0.8rem 1.75rem;
+  border-radius: 35px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 6px 20px rgba(255, 46, 147, 0.5);
+  transition: all 0.25s ease;
+}
+
+.chairs-main-btn:hover {
+  transform: scale(1.06);
+  box-shadow: 0 8px 25px rgba(255, 46, 147, 0.7);
+}
+
+.chairs-main-btn.freeze {
+  background: linear-gradient(135deg, #FF0055, #FF2E93);
+  box-shadow: 0 6px 25px rgba(255, 0, 85, 0.7);
+}
+
+.chairs-main-btn.winner {
+  background: linear-gradient(135deg, #FFE600, #FF8A00);
+  color: #0f172a;
+  box-shadow: 0 6px 25px rgba(255, 230, 0, 0.7);
+}
+
+.chairs-bottom-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chairs-input-box {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.chairs-input-box input {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid var(--border-card);
+  color: #FFFFFF;
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+}
+
+.players-live-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.player-chip {
+  padding: 0.3rem 0.8rem;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.player-chip.active {
+  background: rgba(0, 240, 255, 0.15);
+  color: var(--accent-cyan);
+  border-color: rgba(0, 240, 255, 0.4);
+}
+
+.player-chip.standing {
+  background: rgba(255, 0, 85, 0.3);
+  color: #FF2E93;
+  border-color: #FF0055;
+  animation: pulseChip 0.8s infinite alternate;
+}
+
+.player-chip.eliminated {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+@keyframes pulseChip {
+  from { transform: scale(1); }
+  to { transform: scale(1.06); }
+}
+
+/* ──────────────────────────────────────────────────────────────────
+   📱 MOBILE LANDSCAPE MODE — Fully responsive & side-by-side wheels
+   ────────────────────────────────────────────────────────────────── */
+@media (max-height: 550px) and (orientation: landscape) {
+  body:not(.tv-mode):not(.cast-controller-mode) #app {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .navbar {
+    padding: 0.4rem 1rem;
+    flex-shrink: 0;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .brand h1 {
+    font-size: 1.3rem;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .main-container {
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .control-bar {
+    padding: 0.5rem 0.75rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.75rem;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .control-group {
+    flex-shrink: 0;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) #wheels-grid {
+    display: grid !important;
+    gap: 0.75rem !important;
+    min-height: 65vh !important;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) #wheels-grid.layout-2 {
+    grid-template-columns: 35% calc(65% - 0.75rem) !important;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) #wheels-grid.layout-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .wheel-canvas-wrapper {
+    height: 55vh !important;
+    min-height: 220px !important;
+    max-height: none !important;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) .paper-stage-container,
+  body:not(.tv-mode):not(.cast-controller-mode) .chairs-stage-container {
+    height: 52vh !important;
+    min-height: 220px !important;
+  }
+
+  body:not(.tv-mode):not(.cast-controller-mode) button,
+  body:not(.tv-mode):not(.cast-controller-mode) input,
+  body:not(.tv-mode):not(.cast-controller-mode) .fan-btn-inline,
+  body:not(.tv-mode):not(.cast-controller-mode) .chairs-main-btn,
+  body:not(.tv-mode):not(.cast-controller-mode) .arcade-tab-btn {
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+  }
+}
+
+/* Paper Game Options Removal & Chips UI */
+.paper-header-result-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.danger-badge {
+  background: linear-gradient(135deg, #FF2E93, #FF0055) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  border-radius: 20px !important;
+  padding: 0.4rem 1rem !important;
+  font-weight: 700 !important;
+  font-size: 0.85rem !important;
+  box-shadow: 0 4px 15px rgba(255, 46, 147, 0.5) !important;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.danger-badge:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(255, 46, 147, 0.8) !important;
+}
+
+.btn-secondary.danger {
+  background: rgba(255, 46, 147, 0.2);
+  color: #FF4D94;
+  border-color: rgba(255, 46, 147, 0.5);
+}
+
+.btn-secondary.danger:hover {
+  background: rgba(255, 46, 147, 0.4);
+  color: #FFFFFF;
+}
+
+.paper-name-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  z-index: 1;
+}
+
+.paper-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--text-main);
+  padding: 0.3rem 0.75rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+  transition: all 0.25s ease;
+}
+
+.paper-chip:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.paper-chip.picked {
+  background: linear-gradient(135deg, rgba(255, 46, 147, 0.3), rgba(112, 0, 255, 0.3));
+  border-color: #FF2E93;
+  color: #FFFFFF;
+  box-shadow: 0 0 12px rgba(255, 46, 147, 0.5);
+}
+
+.chip-delete-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0 0.15rem;
+  margin-left: 0.2rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s ease;
+}
+
+.chip-delete-btn:hover {
+  color: #FF2E93;
+  transform: scale(1.3);
+}
+
+body.tv-mode .paper-name-chips,
+body.tv-mode #paper-remove-picked-badge-btn {
+  display: none !important;
+}
+
+/* Theme Select Dropdown */
+.theme-select-input {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-select-input:focus,
+.theme-select-input:hover {
+  border-color: var(--accent-cyan);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.theme-select-input option {
+  background: #141428;
+  color: #FFFFFF;
+}
+

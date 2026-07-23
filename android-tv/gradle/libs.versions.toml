@@ -1,0 +1,12 @@
+[versions]
+androidGradlePlugin = "9.0.1"
+androidxCore = "1.12.0"
+junit = "4.13.2"
+kotlin = "2.3.20"
+
+[libraries]
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidxCore" }
+junit = { module = "junit:junit", version.ref = "junit" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

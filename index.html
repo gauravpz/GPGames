@@ -18,6 +18,13 @@
         <span class="logo-icon">🎡</span>
         <h1>SPIN<span class="highlight">VERSE</span></h1>
       </div>
+
+      <!-- Cast status badge — shown when phone is casting to TV -->
+      <div id="cast-status-badge" class="cast-status-badge" style="display:none">
+        <span>📡</span> <span>Casting to TV</span>
+        <span class="cast-dot"></span>
+      </div>
+
       <div class="header-controls">
         <div class="header-actions">
           <button id="tv-mode-btn" class="icon-btn" title="Toggle TV Projection Mode for big screens / casting">
@@ -31,21 +38,45 @@
           </button>
         </div>
         <div class="audio-panel">
-          <button id="funny-toggle-btn" class="icon-btn active" title="Toggle Funny Cartoon Sounds">
-            <span class="btn-icon">🤪</span> <span class="btn-text">Funny Mode: ON</span>
-          </button>
           <button id="bgm-toggle-btn" class="icon-btn" title="Toggle Music">
             <span class="btn-icon">🎵</span> <span class="btn-text">Music: OFF</span>
           </button>
           <button id="sfx-toggle-btn" class="icon-btn active" title="Toggle Sound FX">
             <span class="btn-icon">🔊</span> <span class="btn-text">SFX: ON</span>
           </button>
+          <button id="tts-toggle-btn" class="icon-btn active" title="Toggle Voice Announcer">
+            <span class="btn-icon">🗣️</span> <span class="btn-text">Voice: ON</span>
+          </button>
         </div>
       </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="main-container">
+    <!-- Game Arcade Launcher Bar -->
+    <div class="game-launcher-bar">
+      <button id="game-mode-wheels-btn" class="arcade-tab-btn active">
+        <span class="tab-icon">🎡</span> SpinVerse Wheels
+      </button>
+      <button id="game-mode-paper-btn" class="arcade-tab-btn">
+        <span class="tab-icon">🕊️</span> Flying Papers & Bird
+      </button>
+      <button id="game-mode-chairs-btn" class="arcade-tab-btn">
+        <span class="tab-icon">🎵</span> Musical Chairs
+      </button>
+    </div>
+
+    <!-- Floating Exit TV Mode button — visible only when tv-mode is active -->
+    <button id="tv-floating-exit-btn" class="tv-floating-exit-btn" title="Exit TV Mode">
+      ✕ Exit TV Mode
+    </button>
+
+    <!-- Flying Papers Game View Container -->
+    <div id="paper-game-view" style="display:none;" class="game-view-section"></div>
+
+    <!-- Musical Chairs Game View Container -->
+    <div id="chairs-game-view" style="display:none;" class="game-view-section"></div>
+
+    <!-- Main Wheels Container -->
+    <main class="main-container" id="wheels-game-view">
       <!-- Top Control Bar -->
       <section class="control-bar card">
         <div class="control-group">
@@ -86,6 +117,16 @@
           </div>
         </div>
 
+        <div class="control-group">
+          <label for="theme-selector">Wheel Theme:</label>
+          <select id="theme-selector" class="theme-select-input">
+            <option value="neon">💖 Neon Cyber</option>
+            <option value="rainbow">🌈 Rainbow Carnival</option>
+            <option value="gold">👑 Golden Luxury</option>
+            <option value="pastel">🌸 Pastel Dream</option>
+          </select>
+        </div>
+
         <div class="control-group spin-action">
           <button id="spin-all-btn" class="btn-primary-large">
             <span class="spin-sparkle">✨</span> SPIN WHEELS! <span class="spin-sparkle">✨</span>
@@ -102,17 +143,6 @@
       <section class="config-panel card">
         <div class="config-header">
           <h2>Wheel Options & Customization</h2>
-          <div class="preset-dropdown-container">
-            <label for="preset-select">Quick Presets:</label>
-            <select id="preset-select">
-              <option value="">-- Load Preset Template --</option>
-              <option value="truth_dare">Truth or Dare</option>
-              <option value="dinner_pick">What to Eat?</option>
-              <option value="decision_maker">Yes / No / Maybe</option>
-              <option value="numbers_dice">Dice Roll (1 to 6)</option>
-              <option value="team_members">Team Challenge</option>
-            </select>
-          </div>
         </div>
 
         <!-- Wheel Selector Tabs -->
@@ -152,6 +182,63 @@
         </div>
       </section>
     </main>
+
+    <!-- 📺 TV Setup Overlay — shown on Android TV to collect options upfront -->
+    <div id="tv-setup-overlay" class="tv-setup-overlay" style="display:none">
+      <div class="tv-setup-card">
+        <div class="tv-setup-header">
+          <span class="tv-setup-icon">🎡</span>
+          <h2>SPIN<span class="highlight">VERSE</span> <span class="tv-setup-badge">📺 TV</span></h2>
+          <p class="tv-setup-subtitle">Customize your wheels, then hit <strong>Start Spinning!</strong></p>
+        </div>
+
+        <div class="tv-setup-wheels">
+          <!-- Wheel 1 -->
+          <div class="tv-setup-wheel-block" id="tv-setup-wheel-0">
+            <div class="tv-setup-wheel-label">
+              <span class="tv-wheel-num">①</span>
+              <input type="text" class="tv-wheel-title-input" id="tv-title-0" placeholder="Wheel 1 Title" value="Player / Subject">
+            </div>
+            <textarea class="tv-wheel-options-input" id="tv-options-0" rows="6" placeholder="One item per line...">Player 1
+Player 2
+Player 3
+Player 4
+Player 5
+Player 6</textarea>
+          </div>
+
+          <!-- Wheel 2 -->
+          <div class="tv-setup-wheel-block" id="tv-setup-wheel-1">
+            <div class="tv-setup-wheel-label">
+              <span class="tv-wheel-num">②</span>
+              <input type="text" class="tv-wheel-title-input" id="tv-title-1" placeholder="Wheel 2 Title" value="Action / Task">
+            </div>
+            <textarea class="tv-wheel-options-input" id="tv-options-1" rows="6" placeholder="One item per line...">Sing a Song
+Do 10 Pushups
+Tell a Joke
+Imitate Someone
+High Five Next Person
+Dance for 10s</textarea>
+          </div>
+
+          <!-- Wheel 3 (optional) -->
+          <div class="tv-setup-wheel-block" id="tv-setup-wheel-2">
+            <div class="tv-setup-wheel-label">
+              <span class="tv-wheel-num">③</span>
+              <input type="text" class="tv-wheel-title-input" id="tv-title-2" placeholder="Wheel 3 Title (optional)" value="">
+            </div>
+            <textarea class="tv-wheel-options-input" id="tv-options-2" rows="6" placeholder="Leave empty to use 2 wheels only..."></textarea>
+          </div>
+        </div>
+
+        <div class="tv-setup-footer">
+          <button id="tv-start-btn" class="tv-start-btn">
+            ✨ START SPINNING! ✨
+          </button>
+          <p class="tv-setup-hint">🎮 D-pad OK / remote Enter = Spin &nbsp;|&nbsp; ⬅️ Back = Exit</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Non-blocking Floating Result Banner (Auto-closes in 3s or via X) -->
     <div id="result-toast" class="result-toast hidden">

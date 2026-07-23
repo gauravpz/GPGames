@@ -1,8 +1,8 @@
-// Main Orchestrator for Multi-Wheel Spinner Game
-
 import { Wheel } from './wheel.js';
 import { soundEngine } from './audio.js';
 import { ParticleSystem } from './particles.js';
+import { PaperGame } from './paperGame.js';
+import { MusicalChairsGame } from './musicalChairs.js';
 
 const STORAGE_KEY = 'spinverse_data';
 
@@ -18,11 +18,22 @@ class App {
     this.defaultConfigs = [
       {
         title: 'Player / Subject',
-        options: ['Player 1', 'Player 2', 'Player 3', 'Player 4', 'Player 5', 'Player 6']
+        options: ['Gaurav', 'Madhu', 'Papa', 'Mama', 'Dadi', 'Dadaji', 'Pappu', 'Chhakka', '12']
       },
       {
         title: 'Action / Task',
-        options: ['Sing a Song', 'Do 10 Pushups', 'Tell a Joke', 'Imitate Someone', 'High Five Next Person', 'Dance for 10s']
+        options: [
+          '👑 Sing "Let It Go"',
+          '🧚 Magical Fairy Spin',
+          '🦄 Gallop Like Unicorn',
+          '💃 Princess Dance',
+          '🐰 Hop 5x Like Bunny',
+          '🌟 Pose Like Superstar',
+          '💖 Give a Big Hug',
+          '🎨 Draw Air Heart',
+          '👑 Finger Crown Pose',
+          '🐱 Meow Like Kitty'
+        ]
       },
       {
         title: 'Multiplier / Bonus',
@@ -32,42 +43,94 @@ class App {
 
     this.wheelConfigs = JSON.parse(JSON.stringify(this.defaultConfigs));
 
-    this.presets = {
-      truth_dare: [
-        { title: 'Type', options: ['TRUTH 🗣️', 'DARE ⚡', 'TRUTH 🗣️', 'DARE ⚡'] },
-        { title: 'Intensity', options: ['Mild 🌿', 'Medium 🌶️', 'Spicy 🔥', 'Extreme 💥'] },
-        { title: 'Condition', options: ['Do it now', 'Double dare', 'Pass to left', 'Free Pass'] }
-      ],
-      dinner_pick: [
-        { title: 'Cuisine', options: ['Pizza 🍕', 'Sushi 🍣', 'Tacos 🌮', 'Burger 🍔', 'Pasta 🍝', 'Ramen 🍜', 'Curry 🍛'] },
-        { title: 'Service', options: ['Dine In 🍽️', 'Takeout 🥡', 'Delivery 🚗', 'Cook at Home 👨‍🍳'] },
-        { title: 'Dessert', options: ['Ice Cream 🍦', 'Brownie 🍫', 'Cheesecake 🍰', 'Skip Dessert ❌'] }
-      ],
-      decision_maker: [
-        { title: 'Decision', options: ['YES! ✅', 'NO ❌', 'MAYBE ❓', 'DEFINITELY 💯', 'ASK AGAIN 🔄'] },
-        { title: 'Timeframe', options: ['Right Now ⏱️', 'Later Today 🌅', 'Tomorrow 📅', 'Next Week 🗓️'] },
-        { title: 'Consequence', options: ['Treat Yourself 🎁', 'Share with Friend 🤝', 'Keep Secret 🤫'] }
-      ],
-      numbers_dice: [
-        { title: 'Dice 1', options: ['1 ⚀', '2 ⚁', '3 ⚂', '4 ⚃', '5 ⚄', '6 ⚅'] },
-        { title: 'Dice 2', options: ['1 ⚀', '2 ⚁', '3 ⚂', '4 ⚃', '5 ⚄', '6 ⚅'] },
-        { title: 'Modifier', options: ['+1', '-1', 'x2', 'x3', '+5'] }
-      ],
-      team_members: [
-        { title: 'Team Member', options: ['Alex', 'Jordan', 'Taylor', 'Morgan', 'Sam', 'Chris'] },
-        { title: 'Role', options: ['Lead Meeting 🎙️', 'Take Notes 📝', 'Code Review 💻', 'Demo Feature 🚀'] },
-        { title: 'Perk', options: ['Free Coffee ☕', 'Leave 15m Early 🏃', 'Pick Song 🎵', 'Kudos Star ⭐'] }
-      ]
-    };
-
     this.loadFromStorage();
     this.initDOM();
     this.initParticleEngine();
+    this.initPaperGame();
+    this.initMusicalChairsGame();
     this.setupEventListeners();
+    this.setupArcadeLauncher();
     this.renderWheels();
     this.updateTabEditor();
     this.updateTabsVisibility();
     this.renderHistoryList();
+    this.activateTVSetup();
+  }
+
+  initPaperGame() {
+    const container = document.getElementById('paper-game-view');
+    if (container) {
+      this.paperGame = new PaperGame(container, soundEngine, this.particles);
+    }
+  }
+
+  initMusicalChairsGame() {
+    const container = document.getElementById('chairs-game-view');
+    if (container) {
+      this.chairsGame = new MusicalChairsGame(container, soundEngine, this.particles);
+    }
+  }
+
+  setupArcadeLauncher() {
+    const wheelsTab = document.getElementById('game-mode-wheels-btn');
+    const paperTab = document.getElementById('game-mode-paper-btn');
+    const chairsTab = document.getElementById('game-mode-chairs-btn');
+
+    const wheelsView = document.getElementById('wheels-game-view');
+    const paperView = document.getElementById('paper-game-view');
+    const chairsView = document.getElementById('chairs-game-view');
+
+    if (wheelsTab && paperTab && chairsTab && wheelsView && paperView && chairsView) {
+      this.addFastTouch(wheelsTab, () => {
+        wheelsTab.classList.add('active');
+        paperTab.classList.remove('active');
+        chairsTab.classList.remove('active');
+
+        wheelsView.style.display = 'flex';
+        paperView.style.display = 'none';
+        chairsView.style.display = 'none';
+
+        if (this.paperGame) this.paperGame.pause();
+        if (this.chairsGame) this.chairsGame.pause();
+
+        this.wheels.forEach(w => w.resize());
+
+        // Sync tab to TV
+        if (window.MobileBridge) try { window.MobileBridge.onTabChange('wheels'); } catch(e) {}
+      });
+
+      this.addFastTouch(paperTab, () => {
+        paperTab.classList.add('active');
+        wheelsTab.classList.remove('active');
+        chairsTab.classList.remove('active');
+
+        wheelsView.style.display = 'none';
+        paperView.style.display = 'block';
+        chairsView.style.display = 'none';
+
+        if (this.chairsGame) this.chairsGame.pause();
+        if (this.paperGame) this.paperGame.resize();
+
+        // Sync tab to TV
+        if (window.MobileBridge) try { window.MobileBridge.onTabChange('paper'); } catch(e) {}
+      });
+
+      this.addFastTouch(chairsTab, () => {
+        chairsTab.classList.add('active');
+        wheelsTab.classList.remove('active');
+        paperTab.classList.remove('active');
+
+        wheelsView.style.display = 'none';
+        paperView.style.display = 'none';
+        chairsView.style.display = 'block';
+
+        if (this.paperGame) this.paperGame.pause();
+        if (this.chairsGame) this.chairsGame.resize();
+
+        // Sync tab to TV
+        if (window.MobileBridge) try { window.MobileBridge.onTabChange('chairs'); } catch(e) {}
+      });
+    }
   }
 
   // ─── LocalStorage ────────────────────────────────────────────────
@@ -100,9 +163,23 @@ class App {
         wheelConfigs: this.wheelConfigs,
         activeWheelCount: this.activeWheelCount,
         spinDuration: this.spinDuration,
-        spinHistory: this.spinHistory.slice(-100) // Keep last 100 entries max
+        spinHistory: this.spinHistory.slice(-100)
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      // Sync config to TV if casting
+      if (window.MobileBridge) {
+        try {
+          window.MobileBridge.onConfigUpdate(JSON.stringify({
+            wheelConfigs: this.wheelConfigs,
+            activeWheelCount: this.activeWheelCount,
+            audioConfig: {
+              bgmMuted: soundEngine.bgmMuted,
+              sfxMuted: soundEngine.sfxMuted,
+              funnyMode: soundEngine.funnyMode
+            }
+          }));
+        } catch(e) {}
+      }
     } catch (e) {
       console.warn('Failed to save data:', e);
     }
@@ -127,7 +204,9 @@ class App {
 
     this.bgmToggleBtn = document.getElementById('bgm-toggle-btn');
     this.sfxToggleBtn = document.getElementById('sfx-toggle-btn');
+    this.ttsToggleBtn = document.getElementById('tts-toggle-btn');
     this.funnyToggleBtn = document.getElementById('funny-toggle-btn');
+    this.themeSelector = document.getElementById('theme-selector');
 
     this.tvModeBtn = document.getElementById('tv-mode-btn');
     this.fullscreenBtn = document.getElementById('fullscreen-btn');
@@ -172,12 +251,28 @@ class App {
   }
 
   // ─── Event Listeners ────────────────────────────────────────────
+  addFastTouch(btn, handler) {
+    if (!btn) return;
+    let handled = false;
+    btn.addEventListener('pointerdown', (e) => {
+      handled = true;
+      handler(e);
+    });
+    btn.addEventListener('click', (e) => {
+      if (handled) {
+        handled = false;
+        return;
+      }
+      handler(e);
+    });
+  }
+
   setupEventListeners() {
     if (this.wheelCountBtns) {
       this.wheelCountBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        this.addFastTouch(btn, (e) => {
           const count = parseInt(e.target.dataset.count, 10);
-          this.setWheelCount(count);
+          if (count) this.setWheelCount(count);
         });
       });
     }
@@ -191,58 +286,44 @@ class App {
     }
 
     if (this.spinAllBtn) {
-      this.spinAllBtn.addEventListener('click', () => this.spinAll());
+      this.addFastTouch(this.spinAllBtn, () => this.spinAll());
     }
 
     if (this.autoRemoveBtn) {
-      this.autoRemoveBtn.addEventListener('click', () => {
+      this.addFastTouch(this.autoRemoveBtn, () => {
         this.autoRemoveEnabled = !this.autoRemoveEnabled;
         this.autoRemoveBtn.classList.toggle('active', this.autoRemoveEnabled);
         const textSpan = this.autoRemoveBtn.querySelector('.btn-text');
         if (textSpan) textSpan.textContent = `Auto-Remove: ${this.autoRemoveEnabled ? 'ON' : 'OFF'}`;
-        if (this.autoRemoveEnabled && soundEngine.funnyMode) soundEngine.playQuack();
       });
     }
 
     if (this.mainRemoveBtn) {
-      this.mainRemoveBtn.addEventListener('click', () => {
+      this.addFastTouch(this.mainRemoveBtn, () => {
         this.removeLandedOptions();
       });
     }
 
     if (this.reverseSpinBtn) {
-      this.reverseSpinBtn.addEventListener('click', () => {
+      this.addFastTouch(this.reverseSpinBtn, () => {
         this.reverseSpinEnabled = !this.reverseSpinEnabled;
         this.reverseSpinBtn.classList.toggle('active', this.reverseSpinEnabled);
         const textSpan = this.reverseSpinBtn.querySelector('.btn-text');
         if (textSpan) textSpan.textContent = `Reverse: ${this.reverseSpinEnabled ? 'ON' : 'OFF'}`;
-        if (soundEngine.funnyMode) soundEngine.playQuack();
       });
     }
 
     if (this.multiThrustBtn) {
-      this.multiThrustBtn.addEventListener('click', () => {
+      this.addFastTouch(this.multiThrustBtn, () => {
         this.multiThrustEnabled = !this.multiThrustEnabled;
         this.multiThrustBtn.classList.toggle('active', this.multiThrustEnabled);
         const textSpan = this.multiThrustBtn.querySelector('.btn-text');
         if (textSpan) textSpan.textContent = `Thrust Kicks: ${this.multiThrustEnabled ? 'ON' : 'OFF'}`;
-        if (soundEngine.funnyMode) soundEngine.playQuack();
-      });
-    }
-
-    if (this.funnyToggleBtn) {
-      this.funnyToggleBtn.addEventListener('click', () => {
-        const isFunny = soundEngine.funnyMode;
-        soundEngine.toggleFunnyMode(!isFunny);
-        this.funnyToggleBtn.classList.toggle('active', !isFunny);
-        const textSpan = this.funnyToggleBtn.querySelector('.btn-text');
-        if (textSpan) textSpan.textContent = `Funny Mode: ${!isFunny ? 'ON' : 'OFF'}`;
-        if (!isFunny) soundEngine.playQuack();
       });
     }
 
     if (this.bgmToggleBtn) {
-      this.bgmToggleBtn.addEventListener('click', () => {
+      this.addFastTouch(this.bgmToggleBtn, () => {
         const isMuted = soundEngine.bgmMuted;
         soundEngine.toggleBgm(isMuted);
         this.bgmToggleBtn.classList.toggle('active', isMuted);
@@ -252,7 +333,7 @@ class App {
     }
 
     if (this.sfxToggleBtn) {
-      this.sfxToggleBtn.addEventListener('click', () => {
+      this.addFastTouch(this.sfxToggleBtn, () => {
         const isMuted = soundEngine.sfxMuted;
         soundEngine.toggleSfx(isMuted);
         this.sfxToggleBtn.classList.toggle('active', !isMuted);
@@ -261,9 +342,26 @@ class App {
       });
     }
 
+    if (this.ttsToggleBtn) {
+      this.addFastTouch(this.ttsToggleBtn, () => {
+        const isMuted = soundEngine.voiceMuted;
+        soundEngine.toggleVoice(isMuted);
+        this.ttsToggleBtn.classList.toggle('active', !isMuted);
+        const textSpan = this.ttsToggleBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = `Voice: ${!isMuted ? 'ON' : 'OFF'}`;
+      });
+    }
+
+    if (this.themeSelector) {
+      this.themeSelector.addEventListener('change', (e) => {
+        const theme = e.target.value;
+        this.wheels.forEach(w => w.setTheme(theme));
+      });
+    }
+
     // TV Mode toggle
     if (this.tvModeBtn) {
-      this.tvModeBtn.addEventListener('click', () => {
+      this.addFastTouch(this.tvModeBtn, () => {
         const isTV = document.body.classList.toggle('tv-mode');
         this.tvModeBtn.classList.toggle('active', isTV);
         const textSpan = this.tvModeBtn.querySelector('.btn-text');
@@ -277,6 +375,24 @@ class App {
         if (isTV && !document.fullscreenElement) {
           document.documentElement.requestFullscreen().catch(() => {});
         }
+      });
+    }
+
+    const floatingExitBtn = document.getElementById('tv-floating-exit-btn');
+    if (floatingExitBtn) {
+      this.addFastTouch(floatingExitBtn, () => {
+        document.body.classList.remove('tv-mode');
+        if (this.tvModeBtn) {
+          this.tvModeBtn.classList.remove('active');
+          const textSpan = this.tvModeBtn.querySelector('.btn-text');
+          if (textSpan) textSpan.textContent = 'TV Mode';
+        }
+        if (document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+        setTimeout(() => {
+          this.wheels.forEach(w => w.resize());
+        }, 100);
       });
     }
 
@@ -320,22 +436,7 @@ class App {
       });
     }
 
-    if (this.presetSelect) {
-      this.presetSelect.addEventListener('change', (e) => {
-        const key = e.target.value;
-        if (key && this.presets[key]) {
-          const presetData = this.presets[key];
-          presetData.forEach((item, idx) => {
-            if (idx < 3) {
-              this.wheelConfigs[idx] = { title: item.title, options: [...item.options] };
-            }
-          });
-          this.renderWheels();
-          this.updateTabEditor();
-          this.saveToStorage();
-        }
-      });
-    }
+
 
     if (this.toastCloseBtn) {
       this.toastCloseBtn.addEventListener('click', () => {
@@ -364,10 +465,13 @@ class App {
       }
     });
 
-    // Handle window resize for canvases
-    window.addEventListener('resize', () => {
+    // Handle window resize and screen orientation change for canvases
+    const handleResize = () => {
       this.wheels.forEach(w => w.resize());
-    });
+      setTimeout(() => this.wheels.forEach(w => w.resize()), 150);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
 
     // Update fullscreen button text on fullscreen change
     document.addEventListener('fullscreenchange', () => {
@@ -391,25 +495,29 @@ class App {
 
   // ─── Reset All ───────────────────────────────────────────────────
   resetAll() {
-    this.wheelConfigs = JSON.parse(JSON.stringify(this.defaultConfigs));
-    this.activeWheelCount = 2;
-    this.spinDuration = 5;
+    // Preserve user given & saved options in wheelConfigs! Restore full option list to active wheels
     this.lastLandedResults = [];
 
-    // Reset UI
-    if (this.spinDurationInput) this.spinDurationInput.value = 5;
-    if (this.durationValDisplay) this.durationValDisplay.textContent = '5s';
-    if (this.wheelCountBtns) {
-      this.wheelCountBtns.forEach(btn => {
-        btn.classList.toggle('active', parseInt(btn.dataset.count, 10) === 2);
-      });
+    // Re-apply saved options and reset physical wheel orientation
+    this.wheels.forEach((w, idx) => {
+      if (w && this.wheelConfigs[idx]) {
+        w.setOptions(this.wheelConfigs[idx].options);
+      }
+    });
+
+    // Reset winner badges
+    for (let i = 0; i < 3; i++) {
+      const badge = document.getElementById(`winner-badge-${i}`);
+      if (badge) {
+        badge.classList.remove('revealed');
+        badge.textContent = 'Ready to Spin!';
+      }
     }
-    if (this.presetSelect) this.presetSelect.value = '';
 
     this.renderWheels();
     this.updateTabsVisibility();
     this.updateTabEditor();
-    this.hideToast();
+    this.showToast('♻️ Wheels reset to saved options!');
     this.saveToStorage();
   }
 
@@ -439,6 +547,9 @@ class App {
 
   // ─── Render Wheels ───────────────────────────────────────────────
   renderWheels() {
+    if (this.wheels && this.wheels.length > 0) {
+      this.wheels.forEach(w => w && w.destroy && w.destroy());
+    }
     this.wheelsGrid.innerHTML = '';
     this.wheels = [];
     this.wheelsGrid.className = `wheels-grid layout-${this.activeWheelCount}`;
@@ -477,11 +588,7 @@ class App {
         soundEngine.playTick(0.8 + speedRatio * 0.5);
       };
       wheelInstance.onThrustCallback = () => {
-        if (soundEngine.funnyMode) {
-          soundEngine.playBoing();
-        } else {
-          soundEngine.playTick(1.5);
-        }
+        soundEngine.playTick(1.5);
       };
       wheelInstance.onClickCallback = () => {
         this.spinAll();
@@ -501,6 +608,46 @@ class App {
   }
 
   // ─── Tab Editor ──────────────────────────────────────────────────
+  parseOptionLines(rawInputText) {
+    if (!rawInputText) return [];
+
+    const rawTrimmed = rawInputText.trim();
+    if (!rawTrimmed) return [];
+
+    // Single line input mode: split on delimiters (commas, slashes, pipes, semicolons) or spaces if no newlines
+    if (!rawTrimmed.includes('\n')) {
+      if (/[,\/\|;]/.test(rawTrimmed)) {
+        return rawTrimmed
+          .split(/[,\/\|;]+/)
+          .map(item => item.trim())
+          .filter(item => item.length > 0);
+      }
+      // If user typed e.g. "Gaurav Madhu Papa Mama" (multiple space-separated names)
+      const words = rawTrimmed.split(/\s+/).map(w => w.trim()).filter(w => w.length > 0);
+      if (words.length > 1) {
+        return words;
+      }
+    }
+
+    // Multiline mode: split by newlines, also handling any inline delimiters (e.g. commas)
+    const lines = rawTrimmed
+      .split('\n')
+      .map(line => line.trim())
+      .filter(line => line.length > 0);
+
+    const result = [];
+    lines.forEach(line => {
+      if (/[,\/\|;]/.test(line)) {
+        const parts = line.split(/[,\/\|;]+/).map(p => p.trim()).filter(p => p.length > 0);
+        result.push(...parts);
+      } else {
+        result.push(line);
+      }
+    });
+
+    return result;
+  }
+
   updateTabEditor() {
     const config = this.wheelConfigs[this.activeTab];
     if (config) {
@@ -511,15 +658,15 @@ class App {
 
   saveCurrentTabConfig() {
     const title = this.titleInput.value.trim() || `Wheel ${this.activeTab + 1}`;
-    const options = this.optionsInput.value
-      .split('\n')
-      .map(o => o.trim())
-      .filter(o => o.length > 0);
+    const options = this.parseOptionLines(this.optionsInput.value);
 
     if (options.length === 0) {
       alert('Please enter at least one option line!');
       return;
     }
+
+    // Automatically spread the parsed options across multiple lines in the input field!
+    this.optionsInput.value = options.join('\n');
 
     this.wheelConfigs[this.activeTab] = { title, options };
 
@@ -539,12 +686,27 @@ class App {
   }
 
   // ─── Spin All ────────────────────────────────────────────────────
-  async spinAll() {
+  async spinAll(presetTargetIndices = null) {
     if (this.wheels.some(w => w.isSpinning)) return;
 
     soundEngine.ensureContext();
-    if (soundEngine.funnyMode) soundEngine.playBoing();
+    soundEngine.playTick(1.2);
     this.spinAllBtn.disabled = true;
+
+    // Pick/sync exact target indices so Phone and TV land on 100% identical targets
+    let targetIndices = presetTargetIndices;
+    if (!Array.isArray(targetIndices) || targetIndices.length < this.activeWheelCount) {
+      targetIndices = this.wheels.map(w => {
+        const randBuf = new Uint32Array(1);
+        crypto.getRandomValues(randBuf);
+        return randBuf[0] % Math.max(1, w.options.length);
+      });
+
+      // Notify phone bridge → triggers TV wheels with matching target indices
+      if (window.MobileBridge) {
+        try { window.MobileBridge.onSpin(JSON.stringify(targetIndices)); } catch(e) {}
+      }
+    }
 
     try {
       // Reset winner badges
@@ -565,7 +727,8 @@ class App {
 
       const spinPromises = this.wheels.map((wheel, idx) => {
         const profile = speedProfiles[idx] || speedProfiles[0];
-        return wheel.spin(this.spinDuration, null, profile.speedMultiplier, profile.easePower, this.reverseSpinEnabled, this.multiThrustEnabled).then(result => {
+        const targetIdx = (targetIndices && typeof targetIndices[idx] === 'number') ? targetIndices[idx] : null;
+        return wheel.spin(this.spinDuration, targetIdx, profile.speedMultiplier, profile.easePower, this.reverseSpinEnabled, this.multiThrustEnabled).then(result => {
           const badge = document.getElementById(`winner-badge-${idx}`);
           if (badge && result && result.winningSlice) {
             badge.textContent = `🎉 ${result.winningSlice.text}`;
@@ -580,6 +743,10 @@ class App {
       // Play Victory sound fanfare and trigger particle confetti burst
       soundEngine.playVictory();
       this.particles.burst();
+
+      // Announce result with TTS Voice
+      const speechText = results.map(r => r.result).join('! ');
+      soundEngine.speak(speechText);
 
       // Show non-blocking 5-second result toast
       this.showResultsToast(results);
@@ -709,11 +876,14 @@ class App {
 
     this.lastLandedResults.forEach(res => {
       const idx = res.wheelIndex;
-      const targetText = res.result;
-      if (this.wheelConfigs[idx]) {
-        // Filter out the landed option from the wheel options list
+      // Default behavior: Only remove landed options from Wheel 1 (idx === 0); keep Wheel 2 & 3 intact!
+      if (idx !== 0) return;
+
+      const targetText = String(res.result).trim().toLowerCase();
+      if (this.wheelConfigs[idx] && Array.isArray(this.wheelConfigs[idx].options)) {
+        // Filter out the landed option from Wheel 1 options list
         const updatedOptions = this.wheelConfigs[idx].options.filter(opt => {
-          const txt = typeof opt === 'string' ? opt : opt.text;
+          const txt = String(typeof opt === 'string' ? opt : (opt.text || '')).trim().toLowerCase();
           return txt !== targetText;
         });
 
@@ -726,6 +896,13 @@ class App {
 
         if (this.wheels[idx]) {
           this.wheels[idx].setOptions(updatedOptions);
+
+          const badge = document.getElementById(`winner-badge-${idx}`);
+          if (badge) {
+            badge.textContent = `🗑️ "${res.result}" removed!`;
+            badge.classList.remove('revealed');
+          }
+
           const chipsDiv = document.getElementById(`wheel-options-chips-${idx}`);
           if (chipsDiv) this.renderOptionChips(chipsDiv, updatedOptions);
         }
@@ -737,9 +914,264 @@ class App {
     if (soundEngine.funnyMode) soundEngine.playQuack();
     this.hideToast();
   }
+
+  // ─── TV Setup Overlay ─────────────────────────────────────────────
+  /**
+   * Detects if running inside Android TV WebView.
+   * If so: shows the TV setup overlay so users enter their wheel items
+   * upfront, THEN starts the fullscreen spinner UI.
+   * On desktop browsers the overlay is never shown.
+   */
+  activateTVSetup() {
+    // Detect Android TV WebView specifically via TVBridge JS interface
+    const isTVWebView = typeof window.TVBridge !== 'undefined';
+
+    if (!isTVWebView) return;
+
+    const overlay = document.getElementById('tv-setup-overlay');
+    const startBtn = document.getElementById('tv-start-btn');
+    if (!overlay || !startBtn) return;
+
+    // Pre-fill setup inputs from current/saved wheel configs
+    for (let i = 0; i < 3; i++) {
+      const titleInput = document.getElementById(`tv-title-${i}`);
+      const optionsInput = document.getElementById(`tv-options-${i}`);
+      if (titleInput && this.wheelConfigs[i]) {
+        titleInput.value = this.wheelConfigs[i].title || '';
+      }
+      if (optionsInput && this.wheelConfigs[i]) {
+        const opts = this.wheelConfigs[i].options || [];
+        optionsInput.value = opts
+          .map(o => (typeof o === 'string' ? o : o.text))
+          .join('\n');
+      }
+    }
+
+    // Show the overlay
+    overlay.style.display = 'flex';
+
+    // Focus the first title input for immediate TV keyboard use
+    const firstInput = document.getElementById('tv-title-0');
+    if (firstInput) setTimeout(() => firstInput.focus(), 300);
+
+    // "START SPINNING" button handler
+    startBtn.addEventListener('click', () => {
+      // Read inputs and update wheel configs
+      let newWheelCount = 1;
+      for (let i = 0; i < 3; i++) {
+        const titleInput = document.getElementById(`tv-title-${i}`);
+        const optionsInput = document.getElementById(`tv-options-${i}`);
+        const titleVal = titleInput ? titleInput.value.trim() : '';
+        const optionsVal = optionsInput ? optionsInput.value.trim() : '';
+        const lines = this.parseOptionLines(optionsVal);
+
+        if (i === 0 || lines.length > 0) {
+          // Update config for wheels that have content
+          this.wheelConfigs[i] = {
+            title: titleVal || `Wheel ${i + 1}`,
+            options: lines.length > 0 ? lines : (this.wheelConfigs[i]?.options || ['Item 1'])
+          };
+          if (i > 0 && lines.length > 0) newWheelCount = i + 1;
+          if (i === 0) newWheelCount = Math.max(1, newWheelCount);
+        }
+      }
+      this.activeWheelCount = newWheelCount;
+
+      // Hide setup overlay
+      overlay.style.display = 'none';
+
+      // Activate TV mode
+      document.body.classList.add('tv-mode');
+      if (this.tvModeBtn) {
+        this.tvModeBtn.classList.add('active');
+        const textSpan = this.tvModeBtn.querySelector('.btn-text');
+        if (textSpan) textSpan.textContent = 'Exit TV';
+      }
+
+      // Sync wheel count buttons
+      if (this.wheelCountBtns) {
+        this.wheelCountBtns.forEach(btn => {
+          btn.classList.toggle('active', parseInt(btn.dataset.count, 10) === this.activeWheelCount);
+        });
+      }
+
+      // Update wheels grid layout class
+      const grid = document.getElementById('wheels-grid');
+      if (grid) {
+        grid.classList.remove('layout-1', 'layout-2', 'layout-3');
+        grid.classList.add(`layout-${this.activeWheelCount}`);
+      }
+
+      // Rebuild and resize wheels
+      this.renderWheels();
+      this.updateTabEditor();
+      this.updateTabsVisibility();
+      this.saveToStorage();
+
+      // Slight delay for DOM reflow then resize canvases to fill new size
+      setTimeout(() => {
+        this.wheels.forEach(w => w.resize());
+      }, 150);
+    });
+  }
 }
 
 // Start App when DOM loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.app = new App();
+
+  // ── Global functions called by Android native bridges ──────────────
+
+  /** Called from TV Presentation injection: triggers spin with synced targets */
+  window.spinNow = (targetsJson) => {
+    if (window.app) {
+      let targets = null;
+      if (targetsJson) {
+        try {
+          targets = typeof targetsJson === 'string' ? JSON.parse(targetsJson) : targetsJson;
+        } catch(e) {}
+      }
+      window.app.spinAll(targets);
+    }
+  };
+
+  /** Called from SpinBridge when phone config changes → updates TV wheels & audio state */
+  window.applyConfig = (jsonStr) => {
+    try {
+      const raw = typeof jsonStr === 'string' ? jsonStr : JSON.stringify(jsonStr);
+      const data = JSON.parse(raw);
+      if (!window.app) return;
+      if (data.wheelConfigs) window.app.wheelConfigs = data.wheelConfigs;
+      if (data.activeWheelCount) window.app.activeWheelCount = data.activeWheelCount;
+      if (data.audioConfig) {
+        soundEngine.syncAudioState(data.audioConfig);
+      }
+      if (data.paperOptions && window.app.paperGame) {
+        window.app.paperGame.setOptions(data.paperOptions);
+      }
+      if (data.chairsOptions && window.app.chairsGame) {
+        window.app.chairsGame.setOptions(data.chairsOptions);
+      }
+      if (data.activeTab) {
+        window.switchTab(data.activeTab);
+      }
+
+      // Sync grid layout class
+      const grid = document.getElementById('wheels-grid');
+      if (grid) {
+        grid.classList.remove('layout-1', 'layout-2', 'layout-3');
+        grid.classList.add(`layout-${window.app.activeWheelCount}`);
+      }
+      window.app.renderWheels();
+      window.app.updateTabsVisibility();
+      setTimeout(() => { window.app.wheels.forEach(w => w.resize && w.resize()); }, 150);
+    } catch(e) { console.warn('[SpinVerse] applyConfig error:', e); }
+  };
+
+  /** Phone remains 100% full visual game UI */
+  window.activateCastControllerMode = () => {
+    const badge = document.getElementById('cast-status-badge');
+    if (badge) badge.style.display = 'flex';
+  };
+
+  /** Restore phone UI */
+  window.deactivateCastControllerMode = () => {
+    const badge = document.getElementById('cast-status-badge');
+    if (badge) badge.style.display = 'none';
+  };
+
+  // ── TV Remote: Tab switching ───────────────────────────────────────
+
+  /** Called from WheelPresentation (TV) to switch to the correct game tab */
+  window.switchTab = (tabName) => {
+    const wheelsTab = document.getElementById('game-mode-wheels-btn');
+    const paperTab  = document.getElementById('game-mode-paper-btn');
+    const chairsTab = document.getElementById('game-mode-chairs-btn');
+    const wheelsView = document.getElementById('wheels-game-view');
+    const paperView  = document.getElementById('paper-game-view');
+    const chairsView = document.getElementById('chairs-game-view');
+
+    if (!wheelsTab || !paperTab || !chairsTab) return;
+
+    if (tabName === 'wheels') {
+      wheelsTab.classList.add('active');
+      paperTab.classList.remove('active');
+      chairsTab.classList.remove('active');
+      if (wheelsView) wheelsView.style.display = 'flex';
+      if (paperView)  paperView.style.display  = 'none';
+      if (chairsView) chairsView.style.display = 'none';
+      if (window.app?.paperGame)  window.app.paperGame.pause();
+      if (window.app?.chairsGame) window.app.chairsGame.pause();
+      setTimeout(() => { window.app?.wheels?.forEach(w => w.resize?.()); }, 100);
+    } else if (tabName === 'paper') {
+      paperTab.classList.add('active');
+      wheelsTab.classList.remove('active');
+      chairsTab.classList.remove('active');
+      if (wheelsView) wheelsView.style.display = 'none';
+      if (paperView)  paperView.style.display  = 'block';
+      if (chairsView) chairsView.style.display = 'none';
+      if (window.app?.chairsGame) window.app.chairsGame.pause();
+      window.app?.paperGame?.resize();
+    } else if (tabName === 'chairs') {
+      chairsTab.classList.add('active');
+      wheelsTab.classList.remove('active');
+      paperTab.classList.remove('active');
+      if (wheelsView) wheelsView.style.display = 'none';
+      if (paperView)  paperView.style.display  = 'none';
+      if (chairsView) chairsView.style.display = 'block';
+      if (window.app?.paperGame)  window.app.paperGame.pause();
+      window.app?.chairsGame?.resize();
+    }
+  };
+
+  // ── TV Remote: Paper Game ─────────────────────────────────────────
+
+  /** Called from WheelPresentation to trigger paper fan with a preset chosen index */
+  window.triggerPaperAction = (chosenIndex) => {
+    if (window.app?.paperGame) {
+      window.app.paperGame.startFlyingPapers(chosenIndex);
+    }
+  };
+
+  /** Called from WheelPresentation to sync paper game player names */
+  window.syncPaperConfig = (jsonStr) => {
+    try {
+      const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      if (window.app?.paperGame && Array.isArray(data.options)) {
+        window.app.paperGame.setOptions(data.options);
+      }
+    } catch(e) { console.warn('[SpinVerse] syncPaperConfig error:', e); }
+  };
+
+  // ── TV Remote: Musical Chairs Game ───────────────────────────────
+
+  /** Called from WheelPresentation to drive the chairs game remotely */
+  window.triggerChairsAction = (jsonStr) => {
+    try {
+      const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      if (!window.app?.chairsGame) return;
+      const game = window.app.chairsGame;
+      game._skipBridge = true;
+      if (data.action === 'start') {
+        game.startMusicRound();
+      } else if (data.action === 'freeze') {
+        game.stopMusicAndFreezeRemote(data.standingPlayerIndex);
+      } else if (data.action === 'next') {
+        game.nextRound();
+      } else if (data.action === 'reset') {
+        game.resetGame();
+      }
+      game._skipBridge = false;
+    } catch(e) { console.warn('[SpinVerse] triggerChairsAction error:', e); }
+  };
+
+  /** Called from WheelPresentation to sync chair game player names */
+  window.syncChairsConfig = (jsonStr) => {
+    try {
+      const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+      if (window.app?.chairsGame && Array.isArray(data.options)) {
+        window.app.chairsGame.setOptions(data.options);
+      }
+    } catch(e) { console.warn('[SpinVerse] syncChairsConfig error:', e); }
+  };
 });

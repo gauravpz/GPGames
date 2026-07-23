@@ -22,25 +22,63 @@ export class Wheel {
     this.ledPhase = 0;
     this.winHighlightIndex = -1;
     this.winHighlightAlpha = 0;
+    this.animFrameId = null;
+    this.isDestroyed = false;
 
-    this.colorPalette = [
-      '#FF2E93', '#7000FF', '#00F0FF', '#00FF66',
-      '#FFE600', '#FF8A00', '#FF0055', '#A000FF',
-      '#00D2FF', '#39FF14', '#FFD700', '#FF4500'
-    ];
+    this.themes = {
+      neon: ['#FF2E93', '#7000FF', '#00F0FF', '#00FF66', '#FFE600', '#FF8A00', '#FF0055', '#A000FF', '#00D2FF', '#39FF14', '#FFD700', '#FF4500'],
+      rainbow: ['#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#007AFF', '#5856D6', '#AF52DE', '#FF2D55', '#FF9500', '#4CD964', '#5AC8FA', '#007AFF'],
+      gold: ['#D4AF37', '#FFD700', '#DAA520', '#B8860B', '#F3E5AB', '#CFB53B', '#E6C687', '#AA7C11', '#FFD700', '#D4AF37', '#F3E5AB', '#DAA520'],
+      pastel: ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#E8AEFF', '#FFB3E6', '#BFFCC6', '#FFC6FF', '#BDB2FF', '#A0C4FF', '#CAFFBF']
+    };
 
-    this.setOptions(options.length > 0 ? options : this.getDefaultOptions());
+    this.colorPalette = this.themes.neon;
 
-    this.canvas.addEventListener('click', () => {
-      if (this.onClickCallback) {
+    this.extraDurationMs = 0;
+    this.extraRotations = 0;
+    this.spinDirection = 1;
+
+    let handledTouch = false;
+    this.canvas.addEventListener('pointerdown', (e) => {
+      handledTouch = true;
+      if (this.isSpinning) {
+        this.addThrust();
+      } else if (this.onClickCallback) {
         this.onClickCallback(this);
       }
     });
 
-    // Start LED animation loop
-    this._animateLEDs();
+    this.canvas.addEventListener('click', (e) => {
+      if (handledTouch) {
+        handledTouch = false;
+        return;
+      }
+      if (this.isSpinning) {
+        this.addThrust();
+      } else if (this.onClickCallback) {
+        this.onClickCallback(this);
+      }
+    });
 
+    this.setOptions(options.length > 0 ? options : this.getDefaultOptions());
     this.resize();
+  }
+
+  addThrust() {
+    if (!this.isSpinning) return;
+    this.extraDurationMs += 2500;
+    this.extraRotations += (this.spinDirection || 1) * (Math.PI * 4);
+    if (this.onThrustCallback) {
+      this.onThrustCallback();
+    }
+  }
+
+  destroy() {
+    this.isDestroyed = true;
+    if (this.animFrameId) {
+      cancelAnimationFrame(this.animFrameId);
+      this.animFrameId = null;
+    }
   }
 
   getDefaultOptions() {
@@ -67,7 +105,25 @@ export class Wheel {
         color: opt.color || this.colorPalette[idx % this.colorPalette.length]
       };
     });
+    this.winHighlightIndex = -1;
+    this.winHighlightAlpha = 0;
+
+    // Reset wheel rotation angle to align slice 0 under 12 o'clock needle for new options count
+    const numSlices = Math.max(1, this.options.length);
+    const sliceAngle = (Math.PI * 2) / numSlices;
+    this.rotationAngle = (1.5 * Math.PI) - (0.5 * sliceAngle);
+
     this.draw();
+  }
+
+  setTheme(themeName) {
+    if (this.themes[themeName]) {
+      this.colorPalette = this.themes[themeName];
+      this.options.forEach((opt, idx) => {
+        opt.color = this.colorPalette[idx % this.colorPalette.length];
+      });
+      this.draw();
+    }
   }
 
   resize() {
@@ -87,14 +143,27 @@ export class Wheel {
   }
 
   _animateLEDs() {
+    if (this.isDestroyed) return;
     this.ledPhase += 0.06;
+    let needsAnim = false;
     if (this.winHighlightAlpha > 0) {
-      this.winHighlightAlpha -= 0.008;
+      this.winHighlightAlpha -= 0.015;
+      needsAnim = true;
     }
-    if (!this.isSpinning) {
+    
+    if (needsAnim || this.isSpinning) {
       this.draw();
+      this.animFrameId = requestAnimationFrame(() => this._animateLEDs());
+    } else {
+      this.animFrameId = null;
     }
-    requestAnimationFrame(() => this._animateLEDs());
+  }
+
+  triggerHighlightAnim() {
+    if (this.isDestroyed) return;
+    if (!this.animFrameId) {
+      this.animFrameId = requestAnimationFrame(() => this._animateLEDs());
+    }
   }
 
   draw() {
@@ -109,40 +178,24 @@ export class Wheel {
 
     const centerX = size / 2;
     const centerY = size / 2;
-    const radius = (size / 2) - 16;
+    const radius = (size / 2) - 4;
     const numSlices = Math.max(1, this.options.length);
     const sliceAngle = (Math.PI * 2) / numSlices;
 
     ctx.clearRect(0, 0, size, size);
 
-    // Outer Neon Glow Ring
+    // Outer Neon Glow Ring (clean static border, no blinking LEDs)
     ctx.save();
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius + 6, 0, Math.PI * 2);
+    ctx.arc(centerX, centerY, radius + 4, 0, Math.PI * 2);
     ctx.fillStyle = '#1e1b4b';
     ctx.shadowColor = '#00F0FF';
-    ctx.shadowBlur = 18;
+    ctx.shadowBlur = 14;
     ctx.fill();
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.4)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
     ctx.restore();
-
-    // LED-style rim dots
-    const numLEDs = 24;
-    for (let i = 0; i < numLEDs; i++) {
-      const ledAngle = (i / numLEDs) * Math.PI * 2 + this.ledPhase;
-      const ledX = centerX + Math.cos(ledAngle) * (radius + 3);
-      const ledY = centerY + Math.sin(ledAngle) * (radius + 3);
-      const brightness = 0.4 + 0.6 * Math.abs(Math.sin(this.ledPhase * 2 + i * 0.6));
-      const ledColor = i % 2 === 0 ? `rgba(255, 46, 147, ${brightness})` : `rgba(0, 240, 255, ${brightness})`;
-      
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(ledX, ledY, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = ledColor;
-      ctx.shadowColor = ledColor;
-      ctx.shadowBlur = 8;
-      ctx.fill();
-      ctx.restore();
-    }
 
     // Draw Slices
     for (let i = 0; i < numSlices; i++) {
@@ -168,18 +221,36 @@ export class Wheel {
       ctx.stroke();
       ctx.restore();
 
-      // Text label inside slice - Multi-line word wrapping for FULL untruncated text!
+      // Text label inside slice — Unified Outward Radial Direction & 32px Pointer Clearance!
+      const midAngle = startAngle + sliceAngle / 2;
+
       ctx.save();
       ctx.translate(centerX, centerY);
-      ctx.rotate(startAngle + sliceAngle / 2);
+      ctx.rotate(midAngle);
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
 
-      // Base font size calculation
-      let fontSize = Math.max(12, Math.min(24, Math.floor(radius / (numSlices > 10 ? 7 : 5.5))));
-      ctx.font = `800 ${fontSize}px system-ui, -apple-system, sans-serif`;
+      // 1. Slim, clean font weight for optimal legibility
+      const fontWeight = numSlices > 12 ? '600' : '700';
+      
+      // 2. Fine stroke outline so letters are sharp and crisp
+      const strokeWidth = numSlices > 14 ? 1.8 : (numSlices > 8 ? 2.2 : 2.8);
 
-      const maxRadiusWidth = radius * 0.65;
+      // 3. Center Hub Clearance & Pointer Clearance
+      const hubRadius = Math.max(18, Math.floor(size * 0.058));
+      const textDistance = radius - 30; // Outer rim & needle pointer clearance
+      const minTextRadius = hubRadius + 14; // Strict 14px buffer from center hub edge
+      const maxRadiusWidth = Math.max(20, textDistance - minTextRadius); // Strict width bound!
+
+      const maxArcHeight = 2 * textDistance * Math.sin(sliceAngle / 2) * 0.85;
+
+      // 4. Font size caps and balanced scaling
+      const maxCap = numSlices > 14 ? 15 : (numSlices > 10 ? 19 : (numSlices > 6 ? 23 : 26));
+      let fontSize = Math.min(maxCap, Math.floor(radius / (numSlices > 10 ? 6.0 : 4.8)));
+      fontSize = Math.max(9, fontSize);
+
+      ctx.font = `${fontWeight} ${fontSize}px system-ui, -apple-system, sans-serif`;
+
       const words = sliceText.split(' ');
       let lines = [];
       let currentLine = '';
@@ -195,25 +266,29 @@ export class Wheel {
       });
       if (currentLine) lines.push(currentLine);
 
-      // If single long line exceeds width, scale down font size so full text fits
-      while (lines.some(l => ctx.measureText(l).width > maxRadiusWidth) && fontSize > 9) {
+      // 5. Fit lines cleanly into slice arc height & radius width
+      const maxAllowedLineHeight = maxArcHeight / (lines.length || 1);
+      while (
+        (fontSize > maxAllowedLineHeight || lines.some(l => ctx.measureText(l).width > maxRadiusWidth)) &&
+        fontSize > 8
+      ) {
         fontSize--;
-        ctx.font = `800 ${fontSize}px system-ui, -apple-system, sans-serif`;
+        ctx.font = `${fontWeight} ${fontSize}px system-ui, -apple-system, sans-serif`;
       }
 
-      const lineHeight = fontSize * 1.1;
+      const lineHeight = fontSize * 1.15;
       const startY = -((lines.length - 1) * lineHeight) / 2;
 
       lines.forEach((line, lineIdx) => {
         const yPos = startY + (lineIdx * lineHeight);
         
-        ctx.strokeStyle = 'rgba(0, 0, 0, 0.9)';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.95)';
+        ctx.lineWidth = strokeWidth;
         ctx.lineJoin = 'round';
-        ctx.strokeText(line, radius - 18, yPos);
+        ctx.strokeText(line, textDistance, yPos);
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(line, radius - 18, yPos);
+        ctx.fillText(line, textDistance, yPos);
       });
 
       ctx.restore();
@@ -235,8 +310,8 @@ export class Wheel {
       ctx.restore();
     }
 
-    // Center Hub / Peg
-    const hubRadius = Math.max(22, Math.floor(size * 0.075));
+    // Center Hub / Peg — Compact & sleek with strict text clearance
+    const hubRadius = Math.max(18, Math.floor(size * 0.058));
     ctx.save();
     ctx.beginPath();
     ctx.arc(centerX, centerY, hubRadius, 0, Math.PI * 2);
@@ -245,26 +320,68 @@ export class Wheel {
     ctx.shadowBlur = 10;
     ctx.fill();
     ctx.strokeStyle = '#00F0FF';
-    ctx.lineWidth = 3.5;
+    ctx.lineWidth = 3.0;
     ctx.stroke();
 
     // Center Icon / Title initials
     ctx.fillStyle = '#FFFFFF';
-    const hubFontSize = Math.max(11, Math.floor(hubRadius * 0.5));
+    const hubFontSize = Math.max(10, Math.floor(hubRadius * 0.48));
     ctx.font = `bold ${hubFontSize}px system-ui`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('SPIN', centerX, centerY);
     ctx.restore();
 
-    // Top Pointer Arrow (positioned at 12 o'clock)
-    this.drawPointer(centerX, 8);
+    // Draw Pointer Spotlight Laser Beam onto incoming slice at 12 o'clock
+    this.drawPointerBeam(centerX, 4, radius);
+
+    // Top Pointer Arrow (positioned slightly away from wheel rim)
+    this.drawPointer(centerX, 4);
+  }
+
+  drawPointerBeam(centerX, topY, radius) {
+    const ctx = this.ctx;
+    const pointerHeight = Math.max(18, Math.floor(this.size * 0.045));
+    const tipY = topY + pointerHeight;
+    const beamLength = radius * 0.65;
+    const beamSpread = Math.max(14, Math.floor(this.size * 0.06));
+
+    ctx.save();
+
+    // Ultra-Sheer Non-Blocking Beam Glow (Bright spotlight sheen without covering text)
+    const beamGrad = ctx.createLinearGradient(centerX, tipY, centerX, tipY + beamLength);
+    beamGrad.addColorStop(0, 'rgba(0, 240, 255, 0.22)');     // Soft bright cyan tip at pointer
+    beamGrad.addColorStop(0.5, 'rgba(0, 240, 255, 0.06)');   // Extremely sheer cone
+    beamGrad.addColorStop(1, 'rgba(255, 46, 147, 0.0)');     // Transparent fade
+
+    ctx.beginPath();
+    ctx.moveTo(centerX, tipY);
+    ctx.lineTo(centerX - beamSpread, tipY + beamLength);
+    ctx.lineTo(centerX + beamSpread, tipY + beamLength);
+    ctx.closePath();
+
+    ctx.fillStyle = beamGrad;
+    ctx.shadowColor = '#00F0FF';
+    ctx.shadowBlur = 15;
+    ctx.fill();
+
+    // Soft Spotlight Beam Rim Edges
+    ctx.beginPath();
+    ctx.moveTo(centerX, tipY);
+    ctx.lineTo(centerX - beamSpread, tipY + beamLength);
+    ctx.moveTo(centerX, tipY);
+    ctx.lineTo(centerX + beamSpread, tipY + beamLength);
+    ctx.strokeStyle = 'rgba(0, 240, 255, 0.35)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   drawPointer(centerX, topY) {
     const ctx = this.ctx;
-    const pointerWidth = Math.max(16, Math.floor(this.size * 0.05));
-    const pointerHeight = Math.max(30, Math.floor(this.size * 0.08));
+    const pointerWidth = Math.max(12, Math.floor(this.size * 0.038));
+    const pointerHeight = Math.max(18, Math.floor(this.size * 0.045));
 
     ctx.save();
     ctx.beginPath();
@@ -275,11 +392,11 @@ export class Wheel {
 
     ctx.fillStyle = '#FF2E93';
     ctx.shadowColor = '#FF2E93';
-    ctx.shadowBlur = 15;
+    ctx.shadowBlur = 12;
     ctx.fill();
 
     ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
     ctx.restore();
   }
@@ -289,9 +406,11 @@ export class Wheel {
     if (this.isSpinning || this.options.length === 0) return Promise.reject();
 
     this.isSpinning = true;
+    const direction = reverseDirection ? -1 : 1;
+    this.spinDirection = direction;
+
     const numSlices = this.options.length;
     const sliceAngle = (Math.PI * 2) / numSlices;
-    const direction = reverseDirection ? -1 : 1;
 
     // Pick random target slice if not explicitly provided
     if (targetIndex === null || targetIndex < 0 || targetIndex >= numSlices) {
@@ -304,8 +423,8 @@ export class Wheel {
     // Pointer is at Top (270 deg = 1.5 * Math.PI radians)
     const targetSliceAngle = (1.5 * Math.PI) - (targetIndex + 0.5) * sliceAngle;
 
-    // Minimum full spins vary per wheel speed multiplier
-    const extraRotations = (Math.floor(Math.random() * 3) + Math.round(5 * speedMultiplier)) * Math.PI * 2;
+    // Extra full spins for longer, dramatic, luxurious spin
+    const extraRotations = (Math.floor(Math.random() * 4) + Math.round(8 * speedMultiplier)) * Math.PI * 2;
     
     // Calculate final target angle with direction support
     const currentMod = (this.rotationAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
@@ -324,38 +443,29 @@ export class Wheel {
     const durationMs = (durationSeconds * speedMultiplier) * 1000;
     let lastSliceCalculated = this.getWinningIndexAtAngle(this.rotationAngle);
 
-    // 3 to 4 mid-spin thrust timestamps (surges when speed drops)
-    const thrustTimes = enableThrusts ? [0.38, 0.58, 0.74, 0.86] : [];
-    const thrustBoosts = [0.065, 0.048, 0.035, 0.022];
-    const thrustTriggered = [false, false, false, false];
-
     return new Promise((resolve) => {
       const animate = (now) => {
         const elapsed = now - startTime;
-        const rawProgress = Math.min(1, elapsed / durationMs);
+        const totalDuration = durationMs + this.extraDurationMs;
+        const rawProgress = Math.min(1, elapsed / totalDuration);
 
-        // Apply 3-4 mid-spin speed thrust surges as speed drops
-        let effectiveProgress = rawProgress;
-        if (enableThrusts) {
-          for (let tIdx = 0; tIdx < thrustTimes.length; tIdx++) {
-            if (rawProgress >= thrustTimes[tIdx]) {
-              const dt = rawProgress - thrustTimes[tIdx];
-              const surge = Math.sin(Math.min(Math.PI, dt * 7.5)) * thrustBoosts[tIdx];
-              effectiveProgress += surge;
-
-              if (!thrustTriggered[tIdx]) {
-                thrustTriggered[tIdx] = true;
-                if (this.onThrustCallback) {
-                  this.onThrustCallback(tIdx);
-                }
-              }
-            }
-          }
+        // Oiled Bearings Silky Smooth Easing (Zero Jerk, Zero Abrupt Stops)
+        let oiledProgress = 0;
+        if (rawProgress <= 0) {
+          oiledProgress = 0;
+        } else if (rawProgress >= 1) {
+          oiledProgress = 1;
+        } else if (rawProgress < 0.18) {
+          const u = rawProgress / 0.18;
+          oiledProgress = 0.06 * (6 * Math.pow(u, 5) - 15 * Math.pow(u, 4) + 10 * Math.pow(u, 3));
+        } else {
+          const u = (rawProgress - 0.18) / 0.82;
+          const easeOutGlide = 1 - Math.pow(1 - u, 4.5);
+          oiledProgress = 0.06 + 0.94 * easeOutGlide;
         }
 
-        // Custom ease-out deceleration curve per wheel
-        const easeOut = 1 - Math.pow(1 - Math.min(1, effectiveProgress), easePower);
-        this.rotationAngle = startAngle + (finalAngle - startAngle) * easeOut;
+        const currentFinalAngle = finalAngle + this.extraRotations;
+        this.rotationAngle = startAngle + (currentFinalAngle - startAngle) * oiledProgress;
 
         // Check for slice boundary cross to trigger tick sound
         const currentSlice = this.getWinningIndexAtAngle(this.rotationAngle);
@@ -373,14 +483,14 @@ export class Wheel {
           requestAnimationFrame(animate);
         } else {
           this.isSpinning = false;
-          // Trigger winning slice highlight
-          this.winHighlightIndex = this.getWinningIndexAtAngle(finalAngle);
+          // Lock exact target slice directly as physical & textual winner
+          const winningIndex = targetIndex;
+          this.winHighlightIndex = winningIndex;
           this.winHighlightAlpha = 1.0;
-          this.rotationAngle = finalAngle;
+          this.rotationAngle = targetSliceAngle;
           this.draw();
+          this.triggerHighlightAnim();
 
-          // Calculate exact winning slice directly from the physical landing angle
-          const winningIndex = this.getWinningIndexAtAngle(this.rotationAngle);
           const winningSlice = this.options[winningIndex] || this.options[0];
           if (this.onCompleteCallback) {
             this.onCompleteCallback(winningSlice, winningIndex);
@@ -399,10 +509,11 @@ export class Wheel {
     const sliceAngle = (Math.PI * 2) / numSlices;
     
     // Top pointer is at 1.5 * Math.PI (270 deg)
-    let relativeAngle = (1.5 * Math.PI - (angle % (Math.PI * 2))) % (Math.PI * 2);
+    const normAngle = (angle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+    let relativeAngle = (1.5 * Math.PI - normAngle) % (Math.PI * 2);
     while (relativeAngle < 0) relativeAngle += Math.PI * 2;
 
-    const index = Math.floor(relativeAngle / sliceAngle) % numSlices;
+    const index = Math.floor((relativeAngle + 1e-6) / sliceAngle) % numSlices;
     return index;
   }
 }

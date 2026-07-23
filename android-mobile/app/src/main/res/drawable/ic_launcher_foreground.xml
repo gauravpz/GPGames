@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Outer Wheel Outer Ring -->
+    <path
+        android:pathData="M54,54m-34,0a34,34 0 1,1 68,0a34,34 0 1,1 -68,0"
+        android:strokeWidth="4"
+        android:strokeColor="#FF00F0FF"/>
+
+    <!-- Wheel Slices (Vibrant Neon Colors) -->
+    <!-- Slice 1: Pink -->
+    <path
+        android:pathData="M54,54 L54,20 A34,34 0 0,1 83.4,37Z"
+        android:fillColor="#FFFF2E93"/>
+
+    <!-- Slice 2: Cyan -->
+    <path
+        android:pathData="M54,54 L83.4,37 A34,34 0 0,1 83.4,71Z"
+        android:fillColor="#FF00F0FF"/>
+
+    <!-- Slice 3: Green -->
+    <path
+        android:pathData="M54,54 L83.4,71 A34,34 0 0,1 54,88Z"
+        android:fillColor="#FF00FF66"/>
+
+    <!-- Slice 4: Yellow -->
+    <path
+        android:pathData="M54,54 L54,88 A34,34 0 0,1 24.6,71Z"
+        android:fillColor="#FFFFE600"/>
+
+    <!-- Slice 5: Orange -->
+    <path
+        android:pathData="M54,54 L24.6,71 A34,34 0 0,1 24.6,37Z"
+        android:fillColor="#FFFF8A00"/>
+
+    <!-- Slice 6: Purple -->
+    <path
+        android:pathData="M54,54 L24.6,37 A34,34 0 0,1 54,20Z"
+        android:fillColor="#FF7000FF"/>
+
+    <!-- Wheel Inner Spokes -->
+    <path
+        android:pathData="M54,20 L54,88 M24.6,37 L83.4,71 M24.6,71 L83.4,37"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"/>
+
+    <!-- Center Hub Circle -->
+    <path
+        android:pathData="M54,54m-10,0a10,10 0 1,1 20,0a10,10 0 1,1 -20,0"
+        android:fillColor="#FF0F172A"
+        android:strokeWidth="2.5"
+        android:strokeColor="#FF00F0FF"/>
+
+    <!-- Center Star Icon -->
+    <path
+        android:pathData="M54,48 L56,52 L60,53 L57,56 L58,60 L54,58 L50,60 L51,56 L48,53 L52,52 Z"
+        android:fillColor="#FFFFE600"/>
+
+    <!-- Top Pointer Arrow (Golden Needle pointing at 12 o'clock) -->
+    <path
+        android:pathData="M54,24 L47,13 L61,13 Z"
+        android:fillColor="#FFFF2E93"
+        android:strokeWidth="1.5"
+        android:strokeColor="#FFFFFFFF"/>
+
+    <!-- Carrier Bird Silhouette Flying Over Wheel (White Dove) -->
+    <path
+        android:pathData="M72,28 C74,25 78,22 82,24 C80,27 78,29 74,30 C72,32 70,36 68,34 C67,33 69,30 72,28 Z"
+        android:fillColor="#FFFFFFFF"/>
+</vector>
