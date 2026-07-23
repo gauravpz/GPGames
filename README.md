@@ -45,7 +45,8 @@ npm run build
 
 ---
 
-## 📝 Recent Changes & Updates
+- **StartGames.bat Batch Script**: Created Windows launcher script (`StartGames.bat`) to automatically launch the local Vite development server (`npm run dev`) with one click.
+- **Musical Chairs Visual Freeze Dance & Grand Oval Arena**: Implemented random music play/pause intervals with visual **Ice Statue Freeze Poses (`🧊 FREEZE!`)** for animal avatars (lion, panda, fox, tiger, frog, etc.), 50% relaxed walking speed, YouTube default track, 5s auto-start round timer, and screen-filling **Grand Oval Arena Track**.
 - **Sky Bird Paper Removal Feature**: Added option removal controls for **Sky Bird Paper Picker** game, including direct `🗑️ Remove Winner` action button upon bird reveal, `🔄 Auto-Remove: ON/OFF` toggle, and live name chips with `✕` removal buttons. Automatically syncs options list over `SpinBridge` to the TV.
 - **Arcade TV Casting Support**: Added full TV projection/casting mirroring support for **Sky Bird Paper Picker** and **Musical Chairs & Freeze Dance** games, enabling tab switching, configurations, and game state updates to sync seamlessly over `SpinBridge`.
 - Initial project creation with Vite + HTML5 Canvas + Web Audio API.

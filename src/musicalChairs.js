@@ -435,6 +435,10 @@ export class MusicalChairsGame {
         this.statusBadge.textContent = "🛑 PAUSE! Music stopped! Freeze in place! 🧊";
         this.statusBadge.classList.add('frozen');
 
+        if (this.playersState) {
+          this.playersState.forEach(p => { p.pose = 'frozen'; });
+        }
+
         // Pause phase: freeze for random 2.5s - 4.5s
         const pauseDuration = Math.floor(Math.random() * 2000 + 2500);
         this.intervalTimer = setTimeout(() => {
@@ -443,6 +447,11 @@ export class MusicalChairsGame {
           this.playMusic();
           this.statusBadge.textContent = "🎵 Music Resumed! Dance & walk around chairs! 🏃💨";
           this.statusBadge.classList.remove('frozen');
+
+          if (this.playersState) {
+            this.playersState.forEach(p => { p.pose = 'walking'; });
+          }
+
           this.scheduleRandomInterval();
         }, pauseDuration);
       }, playDuration);
@@ -842,6 +851,40 @@ export class MusicalChairsGame {
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 11px system-ui';
       ctx.fillText("No fair! That was my chair! 😱", 0, -45);
+      ctx.restore();
+    } else if (pState && pState.pose === 'frozen') {
+      // Frozen Ice Statue Pose during random music pause!
+      ctx.shadowColor = '#00F0FF';
+      ctx.shadowBlur = 25;
+
+      ctx.fillStyle = '#00F0FF';
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = '20px system-ui';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(animal.emoji, 0, 0);
+
+      // Speech bubble: FREEZE! 🧊
+      ctx.save();
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+      ctx.strokeStyle = '#00F0FF';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(-42, -50, 84, 22, 10);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#00F0FF';
+      ctx.font = 'bold 11px system-ui';
+      ctx.fillText("FREEZE! 🧊", 0, -39);
       ctx.restore();
     } else if (pState && pState.pose === 'seated') {
       // Seated Animal Pose on Chair Cushion!
