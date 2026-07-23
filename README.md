@@ -45,6 +45,7 @@ npm run build
 
 ---
 
+- **💃 Freeze Dance Party Video Game (NEW 4th GAME)**: Added a brand new 4th game mode featuring an almost full-screen embedded YouTube video player (`height: clamp(520px, 75vh, 750px)`), automatic random YouTube video play/pause engine (plays for 4s-9s, freezes for 3s-8s randomly), animated **`FROZEN! 🧊`** video overlay card, referee whistle SFX, voice prompts ("Freeze!", "Dance!"), custom URL loader, and quick party song presets.
 - **StartGames.bat Batch Script**: Created Windows launcher script (`StartGames.bat`) to automatically launch the local Vite development server (`npm run dev`) with one click.
 - **Musical Chairs Visual Freeze Dance & Grand Oval Arena**: Implemented random music play/pause intervals with visual **Ice Statue Freeze Poses (`🧊 FREEZE!`)** for animal avatars (lion, panda, fox, tiger, frog, etc.), 50% relaxed walking speed, YouTube default track, 5s auto-start round timer, and screen-filling **Grand Oval Arena Track**.
 - **Sky Bird Paper Removal Feature**: Added option removal controls for **Sky Bird Paper Picker** game, including direct `🗑️ Remove Winner` action button upon bird reveal, `🔄 Auto-Remove: ON/OFF` toggle, and live name chips with `✕` removal buttons. Automatically syncs options list over `SpinBridge` to the TV.

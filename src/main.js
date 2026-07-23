@@ -3,6 +3,7 @@ import { soundEngine } from './audio.js';
 import { ParticleSystem } from './particles.js';
 import { PaperGame } from './paperGame.js';
 import { MusicalChairsGame } from './musicalChairs.js';
+import { FreezeDanceGame } from './freezeDance.js';
 
 const STORAGE_KEY = 'spinverse_data_v6.0';
 
@@ -58,6 +59,7 @@ class App {
     this.initParticleEngine();
     this.initPaperGame();
     this.initMusicalChairsGame();
+    this.initFreezeDanceGame();
     this.syncPlayerListToGames();
     this.setupEventListeners();
     this.setupArcadeLauncher();
@@ -94,31 +96,42 @@ class App {
     }
   }
 
+  initFreezeDanceGame() {
+    const container = document.getElementById('freeze-game-view');
+    if (container) {
+      this.freezeGame = new FreezeDanceGame(container, soundEngine, this.particles);
+    }
+  }
+
   setupArcadeLauncher() {
     const wheelsTab = document.getElementById('game-mode-wheels-btn');
     const paperTab = document.getElementById('game-mode-paper-btn');
     const chairsTab = document.getElementById('game-mode-chairs-btn');
+    const freezeTab = document.getElementById('game-mode-freeze-btn');
 
     const wheelsView = document.getElementById('wheels-game-view');
     const paperView = document.getElementById('paper-game-view');
     const chairsView = document.getElementById('chairs-game-view');
+    const freezeView = document.getElementById('freeze-game-view');
 
-    if (wheelsTab && paperTab && chairsTab && wheelsView && paperView && chairsView) {
+    if (wheelsTab && paperTab && chairsTab && freezeTab && wheelsView && paperView && chairsView && freezeView) {
       this.addFastTouch(wheelsTab, () => {
         wheelsTab.classList.add('active');
         paperTab.classList.remove('active');
         chairsTab.classList.remove('active');
+        freezeTab.classList.remove('active');
 
         wheelsView.style.display = 'flex';
         paperView.style.display = 'none';
         chairsView.style.display = 'none';
+        freezeView.style.display = 'none';
 
         if (this.paperGame) this.paperGame.pause();
         if (this.chairsGame) this.chairsGame.pause();
+        if (this.freezeGame) this.freezeGame.pause();
 
         this.wheels.forEach(w => w.resize());
 
-        // Sync tab to TV
         if (window.MobileBridge) try { window.MobileBridge.onTabChange('wheels'); } catch(e) {}
       });
 
@@ -126,16 +139,18 @@ class App {
         paperTab.classList.add('active');
         wheelsTab.classList.remove('active');
         chairsTab.classList.remove('active');
+        freezeTab.classList.remove('active');
 
         wheelsView.style.display = 'none';
         paperView.style.display = 'block';
         chairsView.style.display = 'none';
+        freezeView.style.display = 'none';
 
         this.syncPlayerListToGames();
         if (this.chairsGame) this.chairsGame.pause();
+        if (this.freezeGame) this.freezeGame.pause();
         if (this.paperGame) this.paperGame.resize();
 
-        // Sync tab to TV
         if (window.MobileBridge) try { window.MobileBridge.onTabChange('paper'); } catch(e) {}
       });
 
@@ -143,17 +158,36 @@ class App {
         chairsTab.classList.add('active');
         wheelsTab.classList.remove('active');
         paperTab.classList.remove('active');
+        freezeTab.classList.remove('active');
 
         wheelsView.style.display = 'none';
         paperView.style.display = 'none';
         chairsView.style.display = 'block';
+        freezeView.style.display = 'none';
 
         this.syncPlayerListToGames();
         if (this.paperGame) this.paperGame.pause();
+        if (this.freezeGame) this.freezeGame.pause();
         if (this.chairsGame) this.chairsGame.resize();
 
-        // Sync tab to TV
         if (window.MobileBridge) try { window.MobileBridge.onTabChange('chairs'); } catch(e) {}
+      });
+
+      this.addFastTouch(freezeTab, () => {
+        freezeTab.classList.add('active');
+        wheelsTab.classList.remove('active');
+        paperTab.classList.remove('active');
+        chairsTab.classList.remove('active');
+
+        wheelsView.style.display = 'none';
+        paperView.style.display = 'none';
+        chairsView.style.display = 'none';
+        freezeView.style.display = 'block';
+
+        if (this.paperGame) this.paperGame.pause();
+        if (this.chairsGame) this.chairsGame.pause();
+
+        if (window.MobileBridge) try { window.MobileBridge.onTabChange('freeze'); } catch(e) {}
       });
     }
   }
